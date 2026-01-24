@@ -71,14 +71,15 @@ public class ChessBoard {
 
 
         board = new ChessPiece[][]{
-                {BR,   BKn,  BB,   BQ,   BK,   BB,   BKn,  BR},
-                {BP,   BP,   BP,   BP,   BP,   BP,   BP,   BP},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
+                {WR,   WKn,  WB,   WQ,   WK,   WB,   WKn,  WR},
                 {WP,   WP,   WP,   WP,   WP,   WP,   WP,   WP},
-                {WR,   WKn,  WB,   WQ,   WK,   WB,   WKn,  WR}};
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {BP,   BP,   BP,   BP,   BP,   BP,   BP,   BP},
+                {BR,   BKn,  BB,   BQ,   BK,   BB,   BKn,  BR}
+                };
 
     }
 }
