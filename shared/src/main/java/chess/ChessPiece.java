@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,6 +54,44 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return List.of();
+        ChessPiece piece = board.getPiece(myPosition);
+        int row = myPosition.getRow(), col = myPosition.getColumn();
+        ArrayList<ChessMove> validMoves = new ArrayList<ChessMove>();
+        switch (piece.type){
+            case PieceType.KING:
+                for(int r = row - 1; r <= row+1;r++ ){
+                    for(int c = col -1; c <= col+1;c++){
+                        if(r==row && c==col) continue;
+                        ChessPosition pos = new ChessPosition(r,c);
+                        if(!pos.isValid()){continue;}
+                        ChessPiece cp = board.getPiece(pos);
+                        if(cp == null || !cp.pieceColor.equals(piece.pieceColor)){
+                            ChessMove cm = new ChessMove(myPosition,pos,null);
+                            validMoves.add(cm);
+                        }
+                    }
+                }
+                break;
+            case PieceType.QUEEN:
+                break;
+            case PieceType.ROOK:
+                break;
+            case PieceType.BISHOP:
+                break;
+            case PieceType.KNIGHT:
+                break;
+            case PieceType.PAWN:
+
+                break;
+            default:
+                break;
+        }
+
+        return validMoves;
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" + pieceColor + " " + type + '}';
     }
 }
