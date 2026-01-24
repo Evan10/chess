@@ -4,7 +4,6 @@ public class ChessMoveDirection {
 
     private final int x;
 
-
     private final int y;
 
     public ChessMoveDirection(int x, int y){
