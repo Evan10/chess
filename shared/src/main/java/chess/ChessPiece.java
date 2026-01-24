@@ -73,10 +73,17 @@ public class ChessPiece {
                 }
                 break;
             case PieceType.QUEEN:
+                for(int r = row - 1; r <= row+1;r++ ){
+                    for(int c = col -1; c <= col+1;c++){
+                        if(r==row && c==col) continue;
+                        validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(r,c)));
+                    }
+                }
                 break;
             case PieceType.ROOK:
                 break;
             case PieceType.BISHOP:
+
                 break;
             case PieceType.KNIGHT:
                 break;
@@ -88,6 +95,31 @@ public class ChessPiece {
         }
 
         return validMoves;
+    }
+
+    private Collection<ChessMove> movesInLine(ChessBoard board, ChessPosition myPosition,ChessMoveDirection dir){
+        if(!dir.isValid()){throw new RuntimeException();}
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessPosition cp = myPosition;
+        for(int i = 0; i < 7;i++){
+            cp = new ChessPosition(cp.getRow() +dir.getY(),
+                    cp.getColumn()+ dir.getX() );
+            if(!cp.isValid()) break;
+            ChessPiece chessPiece = board.getPiece(cp);
+            if(chessPiece == null){
+                moves.add(new ChessMove(myPosition,cp,null));
+            }else if(isSameTeam(chessPiece)){
+                break;
+            }else{
+                moves.add(new ChessMove(myPosition,cp,null));
+                break;
+            }
+        }
+        return moves;
+    }
+
+    public boolean isSameTeam(ChessPiece chessPiece){
+        return this.pieceColor.equals(chessPiece.pieceColor);
     }
 
     @Override
