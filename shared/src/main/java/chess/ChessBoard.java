@@ -77,8 +77,8 @@ public class ChessBoard {
                 {null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null},
-                {WP, WP, WP, WP, WP, WP, WP, WP},
-                {null, null, null, null, null, null, null, null}};
+                {WP,   WP,   WP,   WP,   WP,   WP,   WP,   WP},
+                {WR,   WKn,  WB,   WQ,   WK,   WB,   WKn,  WR}};
 
     }
 }
