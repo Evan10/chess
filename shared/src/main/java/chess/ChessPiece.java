@@ -113,39 +113,56 @@ public class ChessPiece {
         ChessPosition left = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn()-1);
         ChessPosition straight = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn());
         ChessPosition right = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn()+1);
-        ChessPosition doubleStraight = new ChessPosition(myPosition.getRow()+dir*2,myPosition.getColumn());
+        ChessPosition doubleStraight = new ChessPosition(myPosition.getRow()+(dir*2),myPosition.getColumn());
 
         ChessPiece p;
         if(left.isValid()){
             p = board.getPiece(left);
             if(p !=null && !isSameTeam(p)){
-                moves.add(new ChessMove(myPosition,left,null));
+                if(left.getRow()==1 || left.getRow()==8){
+                    moves.addAll(AllPromotionVariations(myPosition,left));
+                }else {
+                    moves.add(new ChessMove(myPosition, left, null));
+                }
             }
         }
         if(straight.isValid()){
             p = board.getPiece(straight);
             if(p ==null){
-                moves.add(new ChessMove(myPosition,straight,null));
+                if(straight.getRow()==1 || straight.getRow()==8){
+                    moves.addAll(AllPromotionVariations(myPosition,straight));
+                }else {
+                    moves.add(new ChessMove(myPosition, straight, null));
+                }
+
+                if(doubleStraight.isValid()) {
+                    p = board.getPiece(doubleStraight);
+                    if (p == null && ((myPosition.getRow() == 2 && dir == 1) || (myPosition.getRow() == 7 && dir == -1))) {
+                        moves.add(new ChessMove(myPosition,doubleStraight,null));
+                    }
+                }
             }
         }
         if(right.isValid()){
             p = board.getPiece(right);
             if(p !=null && !isSameTeam(p)){
-                moves.add(new ChessMove(myPosition,right,null));
+                if(right.getRow()==1 || right.getRow()==8){
+                    moves.addAll(AllPromotionVariations(myPosition,right));
+                }else {
+                    moves.add(new ChessMove(myPosition, right, null));
+                }
             }
         }
-        if(doubleStraight.isValid()) {
-            p = board.getPiece(doubleStraight);
-            if (p == null && ((myPosition.getRow() == 2 && dir == 1) || (myPosition.getRow() == 7 && dir == -1))) {
-                moves.add(new ChessMove(myPosition,doubleStraight,null));
-            }
-        }
+
 
         return moves;
     }
 
     private Collection<ChessMove> AllPromotionVariations(ChessPosition myPos, ChessPosition newPos){
-        return List.of(new ChessMove(myPos,newPos,PieceType.BISHOP));
+        return List.of(new ChessMove(myPos,newPos,PieceType.BISHOP),
+                new ChessMove(myPos,newPos,PieceType.KNIGHT),
+                new ChessMove(myPos,newPos,PieceType.ROOK),
+                new ChessMove(myPos,newPos,PieceType.QUEEN));
     }
 
     private Collection<ChessMove> HorseMoves(ChessBoard board, ChessPosition myPosition){
