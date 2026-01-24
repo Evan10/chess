@@ -93,7 +93,7 @@ public class ChessPiece {
                 validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(1,-1)));
                 break;
             case PieceType.KNIGHT:
-
+                validMoves.addAll(HorseMoves(board,myPosition));
                 break;
             case PieceType.PAWN:
                 if(piece.pieceColor.equals(ChessGame.TeamColor.WHITE)){
@@ -107,6 +107,23 @@ public class ChessPiece {
         }
 
         return validMoves;
+    }
+
+    private Collection<ChessMove> HorseMoves(ChessBoard board, ChessPosition myPosition){
+        ArrayList<ChessMove> potentialEndPos= new ArrayList<ChessMove>();
+        for(int x = -2;x<=2;x++){
+            if(x==0){continue;}
+            for(int y = -1;y<=1;y+=2){
+                ChessPosition pos = new ChessPosition(myPosition.getRow()
+                        + (Math.abs(x)==2?y:y*2),myPosition.getColumn() + x);
+                if(!pos.isValid()) continue;
+                ChessPiece p = board.getPiece(pos);
+                if(p == null || !isSameTeam(p)){
+                    potentialEndPos.add(new ChessMove(myPosition,pos,null));
+                }
+            }
+        }
+        return potentialEndPos;
     }
 
     private Collection<ChessMove> movesInLine(ChessBoard board, ChessPosition myPosition,ChessMoveDirection dir){
@@ -131,6 +148,7 @@ public class ChessPiece {
     }
 
     public boolean isSameTeam(ChessPiece chessPiece){
+        if(chessPiece == null) return false;
         return this.pieceColor.equals(chessPiece.pieceColor);
     }
 
