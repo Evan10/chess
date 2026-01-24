@@ -73,22 +73,34 @@ public class ChessPiece {
                 }
                 break;
             case PieceType.QUEEN:
-                for(int r = row - 1; r <= row+1;r++ ){
-                    for(int c = col -1; c <= col+1;c++){
-                        if(r==row && c==col) continue;
+                for(int r = - 1; r <= 1;r++ ){
+                    for(int c = -1; c <= 1;c++){
+                        if(r==0 && c==0) continue;
                         validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(r,c)));
                     }
                 }
                 break;
             case PieceType.ROOK:
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(1,0)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(-1,0)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(0,1)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(0,-1)));
                 break;
             case PieceType.BISHOP:
-
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(1,1)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(-1,-1)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(-1,1)));
+                validMoves.addAll(movesInLine(board,myPosition,new ChessMoveDirection(1,-1)));
                 break;
             case PieceType.KNIGHT:
+
                 break;
             case PieceType.PAWN:
+                if(piece.pieceColor.equals(ChessGame.TeamColor.WHITE)){
 
+                }else{
+
+                }
                 break;
             default:
                 break;
