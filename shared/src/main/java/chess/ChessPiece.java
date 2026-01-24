@@ -113,6 +113,7 @@ public class ChessPiece {
         ChessPosition left = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn()-1);
         ChessPosition straight = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn());
         ChessPosition right = new ChessPosition(myPosition.getRow()+dir,myPosition.getColumn()+1);
+        ChessPosition doubleStraight = new ChessPosition(myPosition.getRow()+dir*2,myPosition.getColumn());
 
         ChessPiece p;
         if(left.isValid()){
@@ -133,8 +134,18 @@ public class ChessPiece {
                 moves.add(new ChessMove(myPosition,right,null));
             }
         }
+        if(doubleStraight.isValid()) {
+            p = board.getPiece(doubleStraight);
+            if (p == null && ((myPosition.getRow() == 2 && dir == 1) || (myPosition.getRow() == 7 && dir == -1))) {
+                moves.add(new ChessMove(myPosition,doubleStraight,null));
+            }
+        }
 
         return moves;
+    }
+
+    private Collection<ChessMove> AllPromotionVariations(ChessPosition myPos, ChessPosition newPos){
+        return List.of(new ChessMove(myPos,newPos,PieceType.BISHOP));
     }
 
     private Collection<ChessMove> HorseMoves(ChessBoard board, ChessPosition myPosition){
