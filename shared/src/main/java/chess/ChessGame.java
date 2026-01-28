@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -9,16 +10,18 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-
+    ChessBoard cboard;
+    TeamColor teamTurn;
     public ChessGame() {
-
+        cboard = new ChessBoard();
+        teamTurn = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +30,11 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
+    }
+
+    public void toggleTeamTurn(){
+        teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -46,7 +53,7 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        return List.of();
     }
 
     /**
@@ -56,7 +63,19 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
+        ChessPiece cp = cboard.getPiece(move.getStartPosition());
+        if(!legalMoves.contains(move)){
+            throw new InvalidMoveException("The move "+ move.toString() +" is invalid");
+        }
+        else {
+            ChessPiece.PieceType pt = move.getPromotionPiece();
+            if(pt != null){
+                cp = new ChessPiece(cp.getTeamColor(),pt);
+            }
+            cboard.addPiece(move.getStartPosition(),null);
+            cboard.addPiece(move.getEndPosition(),cp);
+        }
     }
 
     /**
