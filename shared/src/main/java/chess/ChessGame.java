@@ -54,6 +54,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        ChessPiece cp = cboard.getPiece(startPosition);
+        Collection<ChessMove> potentialMoves = cp.pieceMoves(cboard,startPosition);
+
         return List.of();
     }
 
@@ -86,7 +89,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return false;
     }
 
     /**
@@ -96,7 +99,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !areValidMoves(teamColor) && isInCheck(teamColor);
     }
 
     /**
@@ -107,7 +110,12 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !areValidMoves(teamColor) && !isInCheck(teamColor);
+    }
+
+    private boolean areValidMoves(TeamColor teamColor){
+
+        return false;
     }
 
     /**

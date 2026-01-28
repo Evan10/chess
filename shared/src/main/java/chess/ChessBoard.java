@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -15,6 +16,11 @@ public class ChessBoard {
 
     public ChessBoard() {
         board = new ChessPiece[8][8];
+    }
+    public ChessBoard(ChessBoard cb) {
+        board = Arrays.stream(cb.board)
+                .map(ChessPiece[]::clone)
+                .toArray(ChessPiece[][]::new);
     }
 
     /**
@@ -98,5 +104,9 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(board);
+    }
+
+    public ChessBoard copy(){
+        return new ChessBoard(this);
     }
 }
