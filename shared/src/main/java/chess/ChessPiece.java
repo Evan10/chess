@@ -54,16 +54,13 @@ public class ChessPiece {
                 ChessDirection.RIGHT,ChessDirection.DOWN_LEFT,
                 ChessDirection.DOWN_RIGHT,ChessDirection.UP_RIGHT,
                 ChessDirection.UP_LEFT);
-
         for(ChessDirection dir : directions){// Checks for Queen, Rook and Bishop check
             if(isTargetedLine(board,dir,myPosition)) return true;
         }
 
-        if(underKnightTarget(board,myPosition))return true;
-
-
-
-        return false;
+        return underKnightTarget(board,myPosition) ||
+                underKingTarget(board, myPosition) ||
+                underPawnTarget(board, myPosition);
     }
     /**
      * Calculates all the positions a chess piece can move to
@@ -328,6 +325,24 @@ public class ChessPiece {
     }
 
     private boolean underKingTarget(ChessBoard board, ChessPosition pos){
+        ChessPiece myPiece = board.getPiece(pos);
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                if (x == 0 && y == 0) continue;
+
+                ChessPosition cp = new ChessPosition(pos.getRow() + y, pos.getColumn() + x);
+                if (!cp.isValid()) continue;
+
+                ChessPiece p = board.getPiece(cp);
+                if (p != null && p.getTeamColor() != myPiece.getTeamColor()) {
+                    if(p.getPieceType()==PieceType.KING) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean underPawnTarget(ChessBoard board, ChessPosition pos){
         return false;
     }
 
