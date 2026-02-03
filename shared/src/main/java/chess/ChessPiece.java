@@ -59,6 +59,7 @@ public class ChessPiece {
             if(isTargetedLine(board,dir,myPosition)) return true;
         }
 
+        if(underKnightTarget(board,myPosition))return true;
 
 
 
@@ -274,10 +275,12 @@ public class ChessPiece {
         }
         return cm;
     }
-    public boolean isTargetedLine(ChessBoard board, ChessDirection dir, ChessPosition pos){
+
+    private boolean isTargetedLine(ChessBoard board, ChessDirection dir, ChessPosition pos){
         ChessPiece myPiece = board.getPiece(pos);
         ChessPosition cp = pos;
         boolean isDiagonal = dir.getX() != 0 && dir.getY() != 0;
+
         for (int i = 0; i < 8; i++) {
             cp = new ChessPosition(cp.getRow() + dir.getY(), cp.getColumn() + dir.getX());
             if (!cp.isValid()) {
@@ -286,12 +289,39 @@ public class ChessPiece {
             ChessPiece p = board.getPiece(cp);
             if(p == null) continue;
             if (p.pieceColor != myPiece.pieceColor) {
-                return (isDiagonal?
+                if ((isDiagonal?
                         (p.getPieceType() == PieceType.BISHOP):
                         (p.getPieceType() == PieceType.ROOK)) ||
-                        p.getPieceType() == PieceType.QUEEN;
+                        p.getPieceType() == PieceType.QUEEN){
+                    return true;
+                }
             } else {
                 return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean underKnightTarget(ChessBoard board, ChessPosition pos){
+        ChessPiece myPiece = board.getPiece(pos);
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 1; y += 2) {
+                if (x == 0) {
+                    continue;
+                }
+                int newX = pos.getColumn() + x;
+                int newY = pos.getRow() + (y * (Math.abs(x) > 1 ? 1 : 2));
+                ChessPosition cp = new ChessPosition(newY, newX);
+                if (!cp.isValid()) {
+                    continue;
+                }
+                ChessPiece p = board.getPiece(cp);
+                if (p == null) continue;
+                else if(p.getTeamColor()!=myPiece.getTeamColor()){
+                    if(p.getPieceType() == PieceType.KNIGHT){
+                        return true;
+                    }
+                }
             }
         }
         return false;
