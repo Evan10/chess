@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -44,6 +45,14 @@ public class ChessBoard {
         return board[position.getRow()-1][position.getColumn()-1];
     }
 
+    public Collection<ChessPosition> getTeamPieceLocs(ChessGame.TeamColor color){
+        ArrayList<ChessPosition> locs = new ArrayList<>();
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                if (board[y][x].getTeamColor()==color)
+                    locs.add(new ChessPosition(y+1,x+1));
+        return locs;
+    }
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

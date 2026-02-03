@@ -47,6 +47,23 @@ public class ChessPiece {
         return type;
     }
 
+
+    public boolean pieceTargeted(ChessBoard board, ChessPosition myPosition){
+        Collection<ChessDirection> directions = List.of(ChessDirection.UP,
+                ChessDirection.DOWN,ChessDirection.LEFT,
+                ChessDirection.RIGHT,ChessDirection.DOWN_LEFT,
+                ChessDirection.DOWN_RIGHT,ChessDirection.UP_RIGHT,
+                ChessDirection.UP_LEFT);
+
+        for(ChessDirection dir : directions){// Checks for Queen, Rook and Bishop check
+            if(isTargetedLine(board,dir,myPosition)) return true;
+        }
+
+
+
+
+        return false;
+    }
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -257,7 +274,28 @@ public class ChessPiece {
         }
         return cm;
     }
-
+    public boolean isTargetedLine(ChessBoard board, ChessDirection dir, ChessPosition pos){
+        ChessPiece myPiece = board.getPiece(pos);
+        ChessPosition cp = pos;
+        boolean isDiagonal = dir.getX() != 0 && dir.getY() != 0;
+        for (int i = 0; i < 8; i++) {
+            cp = new ChessPosition(cp.getRow() + dir.getY(), cp.getColumn() + dir.getX());
+            if (!cp.isValid()) {
+                return false;
+            }
+            ChessPiece p = board.getPiece(cp);
+            if(p == null) continue;
+            if (p.pieceColor != myPiece.pieceColor) {
+                return (isDiagonal?
+                        (p.getPieceType() == PieceType.BISHOP):
+                        (p.getPieceType() == PieceType.ROOK)) ||
+                        p.getPieceType() == PieceType.QUEEN;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
 
     @Override
     public String toString() {

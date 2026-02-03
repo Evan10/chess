@@ -56,8 +56,9 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece cp = cboard.getPiece(startPosition);
         Collection<ChessMove> potentialMoves = cp.pieceMoves(cboard,startPosition);
+        //TODO: remove moves that place the king in check
 
-        return List.of();
+        return potentialMoves;
     }
 
     /**
@@ -99,7 +100,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return !areValidMoves(teamColor) && isInCheck(teamColor);
+        return noValidMoves(teamColor) && isInCheck(teamColor);
     }
 
     /**
@@ -110,12 +111,16 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return !areValidMoves(teamColor) && !isInCheck(teamColor);
+        return noValidMoves(teamColor) && !isInCheck(teamColor);
     }
 
-    private boolean areValidMoves(TeamColor teamColor){
-
-        return false;
+    private boolean noValidMoves(TeamColor teamColor){
+        Collection<ChessPosition> teamPieceLocs = cboard.getTeamPieceLocs(teamColor);
+        if(teamPieceLocs.isEmpty()) return true;
+        for(ChessPosition pos : teamPieceLocs){
+            if(!validMoves(pos).isEmpty()) return false;
+        }
+        return true;
     }
 
     /**
