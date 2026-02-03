@@ -327,6 +327,10 @@ public class ChessPiece {
         return false;
     }
 
+    private boolean underKingTarget(ChessBoard board, ChessPosition pos){
+        return false;
+    }
+
     @Override
     public String toString() {
         return "[" + pieceColor + ", " + type + "]";
