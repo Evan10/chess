@@ -343,6 +343,22 @@ public class ChessPiece {
     }
 
     private boolean underPawnTarget(ChessBoard board, ChessPosition pos){
+        ChessPiece myPiece = board.getPiece(pos);
+        int direction = myPiece.pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
+
+        ChessPosition left = new ChessPosition(pos.getRow() + direction, pos.getColumn() - 1);
+        ChessPosition right = new ChessPosition(pos.getRow() + direction, pos.getColumn() + 1);
+        if(left.isValid()){
+            if(board.getPiece(left).getPieceType() == PieceType.PAWN){
+                return true;
+            }
+        }
+        if(right.isValid()){
+            if(board.getPiece(right).getPieceType() == PieceType.PAWN){
+                return true;
+            }
+        }
+
         return false;
     }
 
