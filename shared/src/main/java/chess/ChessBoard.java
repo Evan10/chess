@@ -25,9 +25,9 @@ public class ChessBoard {
     }
 
 
-    public void movePiece(ChessMove move){
+    public void movePiece(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = getPiece(move.getStartPosition());
-        if(piece == null) throw new RuntimeException("Invalid move, Piece not found");
+        if(piece == null) throw new InvalidMoveException("Invalid move, Piece not found");
 
         ChessPiece.PieceType type = move.getPromotionPiece();
         if(type !=null) piece = new ChessPiece(piece.getTeamColor(),type);

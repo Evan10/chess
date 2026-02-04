@@ -315,8 +315,7 @@ public class ChessPiece {
                     continue;
                 }
                 ChessPiece p = board.getPiece(cp);
-                if (p == null) continue;
-                else if(p.getTeamColor()!=myPiece.getTeamColor()){
+                if(p!= null && p.getTeamColor()!=myPiece.getTeamColor()){
                     if(p.getPieceType() == PieceType.KNIGHT){
                         return true;
                     }
@@ -352,15 +351,13 @@ public class ChessPiece {
         ChessPosition right = new ChessPosition(pos.getRow() + direction, pos.getColumn() + 1);
         if(left.isValid()){
             ChessPiece piece = board.getPiece(left);
-            if(piece !=null && piece.getPieceType() == PieceType.PAWN){
+            if(piece !=null && piece.getTeamColor() !=myPiece.getTeamColor() && piece.getPieceType() == PieceType.PAWN){
                 return true;
             }
         }
         if(right.isValid()){
             ChessPiece piece = board.getPiece(right);
-            if(piece != null && piece.getPieceType() == PieceType.PAWN){
-                return true;
-            }
+            return piece != null && piece.getTeamColor() != myPiece.getTeamColor() && piece.getPieceType() == PieceType.PAWN;
         }
 
         return false;

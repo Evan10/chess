@@ -16,6 +16,7 @@ public class ChessGame {
     TeamColor teamTurn;
     public ChessGame() {
         cboard = new ChessBoard();
+        cboard.resetBoard();
         teamTurn = TeamColor.WHITE;
     }
 
@@ -55,13 +56,20 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece cp = cboard.getPiece(startPosition);
-        Collection<ChessMove> potentialMoves = cp.pieceMoves(cboard,startPosition);
+        ChessPiece piece = cboard.getPiece(startPosition);
+        if(piece == null) return List.of();
+        Collection<ChessMove> potentialMoves = piece.pieceMoves(cboard,startPosition);
         ArrayList<ChessMove> allowedMoves = new ArrayList<>();
         for(ChessMove move: potentialMoves){
             ChessBoard testBoard = cboard.copy();
-            testBoard.movePiece(move);
-            ChessPosition KingPos = testBoard.getKingPosition(cp.getTeamColor());
+
+            try {
+                testBoard.movePiece(move);
+            } catch (InvalidMoveException e) {
+                throw new RuntimeException(e);
+            }
+
+            ChessPosition KingPos = testBoard.getKingPosition(piece.getTeamColor());
             if(!KingPos.isValid()) throw new RuntimeException("King not found");
             if(!ChessPiece.pieceTargeted(testBoard,KingPos)){
                 allowedMoves.add(move);
@@ -78,11 +86,15 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
+        ChessPiece piece = cboard.getPiece(move.getStartPosition());
         if(!legalMoves.contains(move)){
-            throw new InvalidMoveException("The move "+ move.toString() +" is invalid");
+            throw new InvalidMoveException("The move "+ move +" is invalid");
+        }else if(piece.getTeamColor() != getTeamTurn()){
+            throw new InvalidMoveException("Incorrect player made a move");
         }
         else {
             cboard.movePiece(move);
+            toggleTeamTurn();
         }
     }
 
