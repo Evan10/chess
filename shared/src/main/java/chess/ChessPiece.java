@@ -48,7 +48,7 @@ public class ChessPiece {
     }
 
 
-    public boolean pieceTargeted(ChessBoard board, ChessPosition myPosition){
+    public static boolean pieceTargeted(ChessBoard board, ChessPosition myPosition){
         Collection<ChessDirection> directions = List.of(ChessDirection.UP,
                 ChessDirection.DOWN,ChessDirection.LEFT,
                 ChessDirection.RIGHT,ChessDirection.DOWN_LEFT,
@@ -273,8 +273,10 @@ public class ChessPiece {
         return cm;
     }
 
-    private boolean isTargetedLine(ChessBoard board, ChessDirection dir, ChessPosition pos){
+    private static boolean isTargetedLine(ChessBoard board, ChessDirection dir, ChessPosition pos){
         ChessPiece myPiece = board.getPiece(pos);
+        if(myPiece==null) throw new RuntimeException("Null returned where ChessPiece was expected");
+
         ChessPosition cp = pos;
         boolean isDiagonal = dir.getX() != 0 && dir.getY() != 0;
 
@@ -299,7 +301,7 @@ public class ChessPiece {
         return false;
     }
 
-    private boolean underKnightTarget(ChessBoard board, ChessPosition pos){
+    private static boolean underKnightTarget(ChessBoard board, ChessPosition pos){
         ChessPiece myPiece = board.getPiece(pos);
         for (int x = -2; x <= 2; x++) {
             for (int y = -1; y <= 1; y += 2) {
@@ -324,7 +326,7 @@ public class ChessPiece {
         return false;
     }
 
-    private boolean underKingTarget(ChessBoard board, ChessPosition pos){
+    private static boolean underKingTarget(ChessBoard board, ChessPosition pos){
         ChessPiece myPiece = board.getPiece(pos);
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
@@ -342,19 +344,21 @@ public class ChessPiece {
         return false;
     }
 
-    private boolean underPawnTarget(ChessBoard board, ChessPosition pos){
+    private static boolean underPawnTarget(ChessBoard board, ChessPosition pos){
         ChessPiece myPiece = board.getPiece(pos);
         int direction = myPiece.pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
 
         ChessPosition left = new ChessPosition(pos.getRow() + direction, pos.getColumn() - 1);
         ChessPosition right = new ChessPosition(pos.getRow() + direction, pos.getColumn() + 1);
         if(left.isValid()){
-            if(board.getPiece(left).getPieceType() == PieceType.PAWN){
+            ChessPiece piece = board.getPiece(left);
+            if(piece !=null && piece.getPieceType() == PieceType.PAWN){
                 return true;
             }
         }
         if(right.isValid()){
-            if(board.getPiece(right).getPieceType() == PieceType.PAWN){
+            ChessPiece piece = board.getPiece(right);
+            if(piece != null && piece.getPieceType() == PieceType.PAWN){
                 return true;
             }
         }

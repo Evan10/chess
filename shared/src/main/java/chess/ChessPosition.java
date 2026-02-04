@@ -10,6 +10,8 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
+    public static final ChessPosition INVALID_POSITION = new ChessPosition(-1,-1);
+
     private final int row;
     private final int col;
 

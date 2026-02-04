@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -56,9 +57,17 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece cp = cboard.getPiece(startPosition);
         Collection<ChessMove> potentialMoves = cp.pieceMoves(cboard,startPosition);
-        //TODO: remove moves that place the king in check
-
-        return potentialMoves;
+        ArrayList<ChessMove> allowedMoves = new ArrayList<>();
+        for(ChessMove move: potentialMoves){
+            ChessBoard testBoard = cboard.copy();
+            testBoard.movePiece(move);
+            ChessPosition KingPos = testBoard.getKingPosition(cp.getTeamColor());
+            if(!KingPos.isValid()) throw new RuntimeException("King not found");
+            if(!ChessPiece.pieceTargeted(testBoard,KingPos)){
+                allowedMoves.add(move);
+            }
+        }
+        return allowedMoves;
     }
 
     /**
@@ -74,12 +83,7 @@ public class ChessGame {
             throw new InvalidMoveException("The move "+ move.toString() +" is invalid");
         }
         else {
-            ChessPiece.PieceType pt = move.getPromotionPiece();
-            if(pt != null){
-                cp = new ChessPiece(cp.getTeamColor(),pt);
-            }
-            cboard.addPiece(move.getStartPosition(),null);
-            cboard.addPiece(move.getEndPosition(),cp);
+            cboard.movePiece(move);
         }
     }
 

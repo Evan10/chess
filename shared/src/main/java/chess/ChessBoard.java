@@ -24,6 +24,17 @@ public class ChessBoard {
                 .toArray(ChessPiece[][]::new);
     }
 
+
+    public void movePiece(ChessMove move){
+        ChessPiece piece = getPiece(move.getStartPosition());
+        if(piece == null) throw new RuntimeException("Invalid move, Piece not found");
+
+        ChessPiece.PieceType type = move.getPromotionPiece();
+        if(type !=null) piece = new ChessPiece(piece.getTeamColor(),type);
+
+        addPiece(move.getStartPosition(),null);
+        addPiece(move.getEndPosition(),piece);
+    }
     /**
      * Adds a chess piece to the chessboard
      *
@@ -45,12 +56,29 @@ public class ChessBoard {
         return board[position.getRow()-1][position.getColumn()-1];
     }
 
+    public ChessPosition getKingPosition(ChessGame.TeamColor color){
+        for (int x = 1; x <= 8; x++)
+            for (int y = 1; y <= 8; y++) {
+                ChessPosition pos = new ChessPosition(y,x);
+                ChessPiece p = getPiece(pos);
+                if (p!= null && p.getTeamColor() == color && p.getPieceType() == ChessPiece.PieceType.KING){
+                    return pos;
+                }
+            }
+
+        return ChessPosition.INVALID_POSITION;
+    }
+
+
     public Collection<ChessPosition> getTeamPieceLocs(ChessGame.TeamColor color){
         ArrayList<ChessPosition> locs = new ArrayList<>();
         for (int x = 0; x < 8; x++)
-            for (int y = 0; y < 8; y++)
-                if (board[y][x].getTeamColor()==color)
-                    locs.add(new ChessPosition(y+1,x+1));
+            for (int y = 0; y < 8; y++) {
+                ChessPosition pos = new ChessPosition(y+1,x+1);
+                ChessPiece p = getPiece(pos);
+                if (p != null && p.getTeamColor() == color)
+                    locs.add(new ChessPosition(y + 1, x + 1));
+            }
         return locs;
     }
     /**
