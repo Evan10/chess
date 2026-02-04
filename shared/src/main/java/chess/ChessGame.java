@@ -78,7 +78,6 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
-        ChessPiece cp = cboard.getPiece(move.getStartPosition());
         if(!legalMoves.contains(move)){
             throw new InvalidMoveException("The move "+ move.toString() +" is invalid");
         }
@@ -94,7 +93,9 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return false;
+        ChessPosition KingPos = cboard.getKingPosition(teamColor);
+        if(!KingPos.isValid()) throw new RuntimeException("King not found");
+        return ChessPiece.pieceTargeted(cboard,KingPos);
     }
 
     /**
