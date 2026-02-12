@@ -3,9 +3,9 @@ package chess;
 import java.util.Collection;
 import java.util.List;
 
-public class kingTargetedUtil {
+public class KingTargetedUtil {
 
-    kingTargetedUtil(){
+    KingTargetedUtil(){
     }
 
     public static boolean pieceTargeted(ChessBoard board, ChessPosition myPosition){

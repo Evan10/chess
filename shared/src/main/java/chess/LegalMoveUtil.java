@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class legalMoveUtil {
+public class LegalMoveUtil {
 
-    legalMoveUtil(){
+    LegalMoveUtil(){
     }
 
     public static Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {

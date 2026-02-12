@@ -1,8 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -57,12 +55,12 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece cp = board.getPiece(myPosition);
         return switch (cp.type) {
-            case KING -> legalMoveUtil.kingMoves(board, myPosition);
-            case QUEEN -> legalMoveUtil.queenMoves(board, myPosition);
-            case ROOK -> legalMoveUtil.rookMoves(board, myPosition);
-            case KNIGHT -> legalMoveUtil.knightMoves(board, myPosition);
-            case BISHOP -> legalMoveUtil.bishopMoves(board, myPosition);
-            case PAWN -> legalMoveUtil.pawnMoves(board, myPosition);
+            case KING -> LegalMoveUtil.kingMoves(board, myPosition);
+            case QUEEN -> LegalMoveUtil.queenMoves(board, myPosition);
+            case ROOK -> LegalMoveUtil.rookMoves(board, myPosition);
+            case KNIGHT -> LegalMoveUtil.knightMoves(board, myPosition);
+            case BISHOP -> LegalMoveUtil.bishopMoves(board, myPosition);
+            case PAWN -> LegalMoveUtil.pawnMoves(board, myPosition);
         };
     }
 
