@@ -71,7 +71,7 @@ public class ChessGame {
 
             ChessPosition KingPos = testBoard.getKingPosition(piece.getTeamColor());
             if(!KingPos.isValid()) throw new RuntimeException("King not found");
-            if(!ChessPiece.pieceTargeted(testBoard,KingPos)){
+            if(!kingTargetedUtil.pieceTargeted(testBoard,KingPos)){
                 allowedMoves.add(move);
             }
         }
@@ -107,7 +107,7 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition KingPos = cboard.getKingPosition(teamColor);
         if(!KingPos.isValid()) throw new RuntimeException("King not found");
-        return ChessPiece.pieceTargeted(cboard,KingPos);
+        return kingTargetedUtil.pieceTargeted(cboard,KingPos);
     }
 
     /**
@@ -132,9 +132,9 @@ public class ChessGame {
     }
 
     private boolean noValidMoves(TeamColor teamColor){
-        Collection<ChessPosition> teamPieceLocs = cboard.getTeamPieceLocs(teamColor);
-        if(teamPieceLocs.isEmpty()) return true;
-        for(ChessPosition pos : teamPieceLocs){
+        Collection<ChessPosition> teamPieceLocations = cboard.getTeamPieceLocs(teamColor);
+        if(teamPieceLocations.isEmpty()) return true;
+        for(ChessPosition pos : teamPieceLocations){
             if(!validMoves(pos).isEmpty()) return false;
         }
         return true;
