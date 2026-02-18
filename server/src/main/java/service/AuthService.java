@@ -1,6 +1,12 @@
 package service;
 
 import dataAccess.AuthDAO;
+import kotlin.Pair;
+import model.AuthData;
+import model.UserData;
+
+import java.util.Optional;
+
 
 public class AuthService {
 
@@ -10,8 +16,8 @@ public class AuthService {
         this.authDAO=authDAO;
     }
 
-    public boolean isAuth(String authToken, String username){
-        return false;
+    public AuthData isAuth(String authToken){
+        return new AuthData(authToken,"");
     }
 
 

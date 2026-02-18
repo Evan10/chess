@@ -7,4 +7,12 @@ public class Util {
         return UUID.randomUUID().toString();
     }
 
+
+    public static boolean isValidPassword(String password){
+
+        return false;
+    }
+
+
+
 }
