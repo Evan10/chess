@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
+import dataAccess.AuthDAO;
 
 public class AuthService {
 

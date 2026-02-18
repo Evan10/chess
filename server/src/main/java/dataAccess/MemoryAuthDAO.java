@@ -1,6 +1,6 @@
-package dataaccess;
+package dataAccess;
 
-public class MemoryUserDAO implements UserDAO{
+public class MemoryAuthDAO implements AuthDAO{
     @Override
     public boolean clear() {
         return false;

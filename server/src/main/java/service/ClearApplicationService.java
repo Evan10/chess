@@ -1,14 +1,14 @@
 package service;
 
-import dataaccess.DAO;
-import request_result.ClearApplicationRequest;
-import request_result.ClearApplicationResult;
+import dataAccess.DAO;
+import requestResult.ClearApplicationRequest;
+import requestResult.ClearApplicationResult;
 
 import java.util.Collection;
 
 public class ClearApplicationService {
 
-    private Collection<DAO> dataAccessObjects;
+    private final Collection<DAO> dataAccessObjects;
 
     public ClearApplicationService(Collection<DAO> dataAccessObjects){
         this.dataAccessObjects=dataAccessObjects;

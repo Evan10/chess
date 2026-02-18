@@ -1,4 +1,4 @@
-package request_result;
+package requestResult;
 
 public record LogoutResult(int responseCode, String message) {
 }

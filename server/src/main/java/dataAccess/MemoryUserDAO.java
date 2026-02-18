@@ -1,6 +1,6 @@
-package dataaccess;
+package dataAccess;
 
-public class MemoryGameDAO implements GameDAO{
+public class MemoryUserDAO implements UserDAO{
     @Override
     public boolean clear() {
         return false;

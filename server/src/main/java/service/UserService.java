@@ -1,6 +1,6 @@
 package service;
 
-import request_result.*;
+import requestResult.*;
 
 public class UserService {
     public RegisterResult register(RegisterRequest registerRequest) {

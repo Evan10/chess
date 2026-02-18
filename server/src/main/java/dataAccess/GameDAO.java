@@ -1,4 +1,4 @@
-package dataaccess;
+package dataAccess;
 
 public interface GameDAO extends DAO{
 }
