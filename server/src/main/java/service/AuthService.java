@@ -1,6 +1,7 @@
 package service;
 
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import kotlin.Pair;
 import model.AuthData;
 import model.UserData;
@@ -16,9 +17,12 @@ public class AuthService {
         this.authDAO=authDAO;
     }
 
-    public AuthData isAuth(String authToken){
-
-        return new AuthData(authToken,"");
+    public AuthData getAuth(String authToken){
+        try {
+            return authDAO.getAuthDataWithAuthToken(authToken);
+        } catch (DataAccessException e) {
+            return null;
+        }
     }
 
 

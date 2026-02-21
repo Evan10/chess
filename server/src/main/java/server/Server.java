@@ -1,10 +1,12 @@
 package server;
 
 import dataAccess.*;
+import handler.AuthHandler;
 import handler.ChessGameHandler;
 import handler.ClearApplicationHandler;
 import handler.UserHandler;
 import io.javalin.*;
+import model.AuthData;
 import service.AuthService;
 import service.ClearApplicationService;
 import service.GameService;
@@ -26,7 +28,7 @@ public class Server {
 
         AuthService authService = new AuthService(authDAO);
         GameService gameService = new GameService(gameDAO);
-        UserService userService = new UserService(userDAO);
+        UserService userService = new UserService(userDAO,authDAO);
 
         Collection<DAO> DAOs = List.of(authDAO, gameDAO, userDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(DAOs);
@@ -37,15 +39,35 @@ public class Server {
                 new ClearApplicationHandler(clearApplicationService);
         UserHandler userHandler = new UserHandler(userService);
 
+        AuthHandler authHandler = new AuthHandler(authService);
+
         // Register your endpoints and exception handlers here.
-        javalin .before(context -> {})
-                .delete("/db", context -> {})
-                .post("/user",context -> {})
-                .post("/session", context -> {})
-                .delete("/session",context -> {})
-                .get("/game",context -> {})
-                .post("/game", context -> {})
-                .put("/game", context -> {});
+        javalin .before(authHandler)
+                .delete("/db", context -> {
+                    context.result(clearApplicationHandler.handleClearApplication(context.body()));
+                })
+                .post("/user",context -> {
+                    context.result(userHandler.registerHandler(context.body()));
+                })
+                .post("/session", context -> {
+                    context.result(userHandler.loginHandler(context.body()));
+                })
+                .delete("/session",context -> {
+                    if(!AuthHandler.isAuth(context)) return;
+                    context.result(userHandler.logoutHandler(context.body()));
+                })
+                .get("/game",context -> {
+                    if(!AuthHandler.isAuth(context)) return;
+                    context.result(chessGameHandler.listGamesHandler(context.body()));
+                })
+                .post("/game", context -> {
+                    if(!AuthHandler.isAuth(context)) return;
+                    context.result(chessGameHandler.createGameHandler(context.body()));
+                })
+                .put("/game", context -> {
+                    if(!AuthHandler.isAuth(context)) return;
+                    context.result(chessGameHandler.joinGameHandler(context.body()));
+                });
     }
 
     public int run(int desiredPort) {

@@ -8,6 +8,7 @@ import model.AuthData;
 import model.UserData;
 import org.jetbrains.annotations.NotNull;
 import service.AuthService;
+import util.Constants;
 
 import java.util.Optional;
 
@@ -21,13 +22,16 @@ public class AuthHandler implements Handler {
 
     @Override
     public void handle(@NotNull Context context) throws Exception {
-        String authToken = context.header("authorization");
-        AuthData authData= authService.isAuth(authToken);
-        if(authData.username()==null || authData.username().isBlank()){
-            context.attribute("authenticated",null);
+        String authToken = context.header(Constants.AUTH_TOKEN);
+        AuthData authData= authService.getAuth(authToken);
+        if(authData == null || authData.username().isBlank()){
+            context.attribute(Constants.AUTHENTICATED,null);
         } else {
-            context.attribute("authenticated", authData);
+            context.attribute(Constants.AUTHENTICATED, authData);
         }
+    }
 
+    public static boolean isAuth(@NotNull Context context){
+        return context.attribute(Constants.AUTHENTICATED) != null;
     }
 }
