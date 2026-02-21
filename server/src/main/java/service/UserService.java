@@ -1,18 +1,22 @@
 package service;
 
+import dataAccess.AuthDAO;
 import dataAccess.UserDAO;
 import requestResult.*;
 
 public class UserService {
 
     private final UserDAO userDAO;
-
-    public UserService(UserDAO userDAO){
+    private final AuthDAO authDAO;
+    public UserService(UserDAO userDAO, AuthDAO authDAO){
         this.userDAO = userDAO;
+        this.authDAO=authDAO;
     }
 
     public RegisterResult register(RegisterRequest registerRequest) {
-        return null;
+        userDAO.
+
+
     }
     public LoginResult login(LoginRequest loginRequest) {
         return null;

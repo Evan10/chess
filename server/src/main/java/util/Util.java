@@ -2,6 +2,7 @@ package util;
 import io.javalin.router.matcher.PathSegment;
 import kotlin.Pair;
 
+import javax.crypto.spec.PBEKeySpec;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -10,8 +11,6 @@ public class Util {
     public static String newUUID(){
         return UUID.randomUUID().toString();
     }
-
-
 
     public record PasswordValidationResult(String reason, boolean isValid) {
     }

@@ -17,6 +17,7 @@ public class AuthService {
     }
 
     public AuthData isAuth(String authToken){
+
         return new AuthData(authToken,"");
     }
 
