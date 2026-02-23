@@ -33,8 +33,7 @@ public class ChessGameHandler {
         }
 
         JoinGameRequest req = joinDeserializer
-                .convert(context.body())
-                .withAuth(authToken);
+                .convertWithToken(context.body(),authToken);
 
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
@@ -52,8 +51,7 @@ public class ChessGameHandler {
         }
 
         ListGamesRequest req = listDeserializer
-                .convert(context.body())
-                .withAuth(authToken);
+                .convertWithToken(context.body(), authToken);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;
@@ -70,8 +68,7 @@ public class ChessGameHandler {
         }
 
         CreateGameRequest req = createDeserializer
-                .convert(context.body())
-                .withAuth(authToken);
+                .convertWithToken(context.body(), authToken);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;

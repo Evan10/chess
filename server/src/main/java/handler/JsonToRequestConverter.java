@@ -15,7 +15,12 @@ public class JsonToRequestConverter<T>{
     }
 
     public  T convertWithToken(String json, String authToken){
-        T t = convert(json);
+        String src = json;
+        if(json==null || json.isBlank()) {
+            src = "{}";
+        }
+        T t = convert(src);
+
         if(t instanceof Authorizable<?> a){// Authorizable<?> "a" will only every be type <T> the compiler cant see that
             @SuppressWarnings("unchecked")
             T auth = (T) a.withAuth(authToken);

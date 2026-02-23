@@ -51,6 +51,6 @@ public class AuthHandler implements Handler {
 
     private static void blockRequest(@NotNull Context context){
         context.status(Constants.UNAUTHORIZED);
-        context.result("{\"message\":\"Error: unauthorized\"");
+        context.result("{\"message\":\"Error: unauthorized\"}");
     }
 }

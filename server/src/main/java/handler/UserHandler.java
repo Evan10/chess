@@ -55,8 +55,8 @@ public class UserHandler {
         // the deserializer here is redundant but allows
         // for body info to be added in the future without reworking the handler
         LogoutRequest req = logoutDeserializer
-                .convert(context.body())
-                .withAuth(authToken);
+                .convertWithToken(context.body(),authToken);
+        System.out.println(req);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;
