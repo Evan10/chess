@@ -1,12 +1,15 @@
 package requestResult;
 
-public record JoinGameRequest(String playerColor, String gameID, String authToken) implements NullCheckable, Authorizable<JoinGameRequest>{
+import model.AuthData;
+
+public record JoinGameRequest(String playerColor, String gameID, AuthData authData) implements NullCheckable, Authorizable<JoinGameRequest>{
     public boolean containsNullField(){
-        return playerColor == null || gameID == null || authToken == null;
+        return playerColor == null || gameID == null || authData == null
+        || authData.authToken() == null || authData.username() == null;
     }
 
     @Override
-    public JoinGameRequest withAuth(String authToken) {
-        return new JoinGameRequest(playerColor(), gameID(), authToken);
+    public JoinGameRequest withAuth(AuthData authData) {
+        return new JoinGameRequest(playerColor(), gameID(), authData);
     }
 }

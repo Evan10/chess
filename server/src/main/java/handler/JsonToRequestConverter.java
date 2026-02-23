@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import model.AuthData;
 import requestResult.Authorizable;
 
 public class JsonToRequestConverter<T>{
@@ -14,7 +15,7 @@ public class JsonToRequestConverter<T>{
         return serializer.fromJson(json, type);
     }
 
-    public  T convertWithToken(String json, String authToken){
+    public  T convertWithToken(String json, AuthData authData){
         String src = json;
         if(json==null || json.isBlank()) {
             src = "{}";
@@ -23,7 +24,7 @@ public class JsonToRequestConverter<T>{
 
         if(t instanceof Authorizable<?> a){// Authorizable<?> "a" will only every be type <T> the compiler cant see that
             @SuppressWarnings("unchecked")
-            T auth = (T) a.withAuth(authToken);
+            T auth = (T) a.withAuth(authData);
             return auth;
         }
         return t;

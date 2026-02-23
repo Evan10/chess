@@ -1,12 +1,14 @@
 package requestResult;
 
-public record LogoutRequest(String authToken) implements NullCheckable, Authorizable<LogoutRequest>{
+import model.AuthData;
+
+public record LogoutRequest(AuthData authData) implements NullCheckable, Authorizable<LogoutRequest>{
     public boolean containsNullField(){
-        return authToken == null;
+        return authData == null || authData.authToken() == null || authData.username() == null;
     }
 
     @Override
-    public LogoutRequest withAuth(String authToken) {
-        return new LogoutRequest(authToken);
+    public LogoutRequest withAuth(AuthData authData) {
+        return new LogoutRequest(authData);
     }
 }

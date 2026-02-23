@@ -1,12 +1,14 @@
 package requestResult;
 
-public record ListGamesRequest(String authToken) implements NullCheckable, Authorizable<ListGamesRequest>{
+import model.AuthData;
+
+public record ListGamesRequest(AuthData authData) implements NullCheckable, Authorizable<ListGamesRequest>{
     public boolean containsNullField(){
-        return authToken == null;
+        return authData == null || authData.username() == null || authData.authToken() == null;
     }
 
     @Override
-    public ListGamesRequest withAuth(String authToken) {
-        return new ListGamesRequest(authToken);
+    public ListGamesRequest withAuth(AuthData authData) {
+        return new ListGamesRequest(authData);
     }
 }

@@ -8,6 +8,6 @@ public interface GameDAO extends DAO{
 
     public Collection<GameData> getGameList();
     public GameData getGame(String gameID) throws DataAccessException;
-    public boolean putGame(GameData game);
+    public void putGame(GameData game);
     public void deleteGame(String gameID) throws DataAccessException;
 }

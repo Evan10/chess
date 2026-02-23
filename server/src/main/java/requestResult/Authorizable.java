@@ -1,5 +1,7 @@
 package requestResult;
 
+import model.AuthData;
+
 public interface Authorizable<T extends Authorizable<T>> {
-    public T withAuth(String authToken);
+    public T withAuth(AuthData authData);
 }

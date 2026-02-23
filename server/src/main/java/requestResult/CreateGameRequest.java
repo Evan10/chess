@@ -1,12 +1,15 @@
 package requestResult;
 
-public record CreateGameRequest(String gameName, String authToken) implements NullCheckable, Authorizable<CreateGameRequest>{
+import model.AuthData;
+
+public record CreateGameRequest(String gameName, AuthData authData) implements NullCheckable, Authorizable<CreateGameRequest>{
     public boolean containsNullField(){
-        return gameName == null || authToken == null;
+        return gameName == null || authData == null
+                || authData.authToken() == null || authData.username() == null;
     }
 
     @Override
-    public CreateGameRequest withAuth(String authToken) {
-        return new CreateGameRequest(gameName(), authToken);
+    public CreateGameRequest withAuth(AuthData authData) {
+        return new CreateGameRequest(gameName(), authData);
     }
 }

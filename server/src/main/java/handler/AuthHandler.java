@@ -31,14 +31,14 @@ public class AuthHandler implements Handler {
         }
     }
 
-    public static String doAuth(Context context){
+    public static AuthData doAuth(Context context){
         if(!isAuth(context)
                 || getAuthData(context) == null
                 || getAuthData(context).authToken() == null){
             AuthHandler.blockRequest(context);
             return null;
         }
-        return getAuthData(context).authToken();
+        return getAuthData(context);
     }
 
     private static AuthData getAuthData(Context context){

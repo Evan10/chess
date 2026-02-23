@@ -1,6 +1,7 @@
 package handler;
 
 import io.javalin.http.Context;
+import model.AuthData;
 import requestResult.*;
 
 import service.UserService;
@@ -48,15 +49,14 @@ public class UserHandler {
     }
 
     public void logoutHandler(Context context){
-        String authToken = AuthHandler.doAuth(context);
-        if(authToken==null){
+        AuthData authData = AuthHandler.doAuth(context);
+        if(authData==null || !authData.isValid()){
             return;
         }
         // the deserializer here is redundant but allows
         // for body info to be added in the future without reworking the handler
         LogoutRequest req = logoutDeserializer
-                .convertWithToken(context.body(),authToken);
-        System.out.println(req);
+                .convertWithToken(context.body(),authData);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;

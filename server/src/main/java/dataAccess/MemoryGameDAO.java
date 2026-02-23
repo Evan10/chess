@@ -27,9 +27,8 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public boolean putGame(GameData game) {
-        allGameData.put(game.gameID(),game);
-        return false;
+    public void putGame(GameData game) {
+        allGameData.put(game.gameID(), game);
     }
 
     @Override

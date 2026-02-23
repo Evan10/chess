@@ -58,11 +58,11 @@ public class UserService {
 
 
     public LogoutResult logout(LogoutRequest logoutRequest) {
-        if(logoutRequest.authToken().isBlank())
+        if(logoutRequest.authData().authToken().isBlank())
             return new LogoutResult(401, "Error: unauthorized");
 
         try {
-            authDAO.removeAuthData(logoutRequest.authToken());
+            authDAO.removeAuthData(logoutRequest.authData().authToken());
         } catch (DataAccessException e) {
             return new LogoutResult(400,e.getMessage());
         }

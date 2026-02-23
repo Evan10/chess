@@ -27,13 +27,13 @@ public class ChessGameHandler {
     }
 
     public void joinGameHandler(Context context){
-        String authToken = AuthHandler.doAuth(context);
-        if(authToken==null){
+        AuthData authData = AuthHandler.doAuth(context);
+        if(authData==null || !authData.isValid()){
             return;
         }
 
         JoinGameRequest req = joinDeserializer
-                .convertWithToken(context.body(),authToken);
+                .convertWithToken(context.body(),authData);
 
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
@@ -45,13 +45,13 @@ public class ChessGameHandler {
     }
 
     public void listGamesHandler(Context context){
-        String authToken = AuthHandler.doAuth(context);
-        if(authToken==null){
+        AuthData authData = AuthHandler.doAuth(context);
+        if(authData==null || !authData.isValid()){
             return;
         }
 
         ListGamesRequest req = listDeserializer
-                .convertWithToken(context.body(), authToken);
+                .convertWithToken(context.body(), authData);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;
@@ -62,13 +62,13 @@ public class ChessGameHandler {
     }
 
     public void createGameHandler(Context context){
-        String authToken = AuthHandler.doAuth(context);
-        if(authToken==null){
+        AuthData authData = AuthHandler.doAuth(context);
+        if(authData == null || !authData.isValid()){
             return;
         }
 
         CreateGameRequest req = createDeserializer
-                .convertWithToken(context.body(), authToken);
+                .convertWithToken(context.body(), authData);
         if(RequestFormHelper.isMissingFields(req)){
             RequestFormHelper.blockRequest(context);
             return;
