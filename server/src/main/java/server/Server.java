@@ -42,32 +42,16 @@ public class Server {
         AuthHandler authHandler = new AuthHandler(authService);
 
         // Register your endpoints and exception handlers here.
-        javalin .before(authHandler)
-                .delete("/db", context -> {
-                    context.result(clearApplicationHandler.handleClearApplication(context.body()));
-                })
-                .post("/user",context -> {
-                    context.result(userHandler.registerHandler(context.body()));
-                })
-                .post("/session", context -> {
-                    context.result(userHandler.loginHandler(context.body()));
-                })
-                .delete("/session",context -> {
-                    if(!AuthHandler.isAuth(context)) return;
-                    context.result(userHandler.logoutHandler(context.body()));
-                })
-                .get("/game",context -> {
-                    if(!AuthHandler.isAuth(context)) return;
-                    context.result(chessGameHandler.listGamesHandler(context.body()));
-                })
-                .post("/game", context -> {
-                    if(!AuthHandler.isAuth(context)) return;
-                    context.result(chessGameHandler.createGameHandler(context.body()));
-                })
-                .put("/game", context -> {
-                    if(!AuthHandler.isAuth(context)) return;
-                    context.result(chessGameHandler.joinGameHandler(context.body()));
-                });
+        javalin .before(context -> System.out.println(context.body()))
+                .before(authHandler)
+                .delete("/db", clearApplicationHandler::handleClearApplication)
+                .post("/user", userHandler::registerHandler)
+                .post("/session", userHandler::loginHandler)
+                .delete("/session", userHandler::logoutHandler)
+                .get("/game", chessGameHandler::listGamesHandler)
+                .post("/game", chessGameHandler::createGameHandler)
+                .put("/game", chessGameHandler::joinGameHandler)
+                .after(context -> System.out.println(context.status()+" "+context.result()));
     }
 
     public int run(int desiredPort) {

@@ -1,5 +1,6 @@
 package handler;
 
+import io.javalin.http.Context;
 import requestResult.*;
 
 import service.UserService;
@@ -24,22 +25,45 @@ public class UserHandler {
         serializer = ResultToJsonStringConverter.getInstance();
     }
 
-    public String registerHandler(String json){
-        RegisterRequest req = registerDeserializer.convert(json);
+    public void registerHandler(Context context){
+        RegisterRequest req = registerDeserializer.convert(context.body());
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
         RegisterResult res = userService.register(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
-    public String loginHandler(String json){
-        LoginRequest req = loginDeserializer.convert(json);
+    public void loginHandler(Context context){
+        LoginRequest req = loginDeserializer.convert(context.body());
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
         LoginResult res = userService.login(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
-    public String logoutHandler(String json){
-        LogoutRequest req = logoutDeserializer.convert(json);
+    public void logoutHandler(Context context){
+        String authToken = AuthHandler.doAuth(context);
+        if(authToken==null){
+            return;
+        }
+        // the deserializer here is redundant but allows
+        // for body info to be added in the future without reworking the handler
+        LogoutRequest req = logoutDeserializer
+                .convert(context.body())
+                .withAuth(authToken);
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
         LogoutResult res = userService.logout(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
 }

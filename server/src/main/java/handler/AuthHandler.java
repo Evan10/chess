@@ -31,7 +31,26 @@ public class AuthHandler implements Handler {
         }
     }
 
+    public static String doAuth(Context context){
+        if(!isAuth(context)
+                || getAuthData(context) == null
+                || getAuthData(context).authToken() == null){
+            AuthHandler.blockRequest(context);
+            return null;
+        }
+        return getAuthData(context).authToken();
+    }
+
+    private static AuthData getAuthData(Context context){
+        return context.attribute(Constants.AUTHENTICATED);
+    }
+
     public static boolean isAuth(@NotNull Context context){
         return context.attribute(Constants.AUTHENTICATED) != null;
+    }
+
+    private static void blockRequest(@NotNull Context context){
+        context.status(Constants.UNAUTHORIZED);
+        context.result("{\"message\":\"Error: unauthorized\"");
     }
 }

@@ -1,5 +1,7 @@
 package handler;
 
+import io.javalin.http.Context;
+import model.AuthData;
 import requestResult.*;
 
 import service.GameService;
@@ -24,22 +26,60 @@ public class ChessGameHandler {
         serializer = ResultToJsonStringConverter.getInstance();
     }
 
-    public String joinGameHandler(String json){
-        JoinGameRequest req = joinDeserializer.convert(json);
+    public void joinGameHandler(Context context){
+        String authToken = AuthHandler.doAuth(context);
+        if(authToken==null){
+            return;
+        }
+
+        JoinGameRequest req = joinDeserializer
+                .convert(context.body())
+                .withAuth(authToken);
+
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
         JoinGameResult res = gameService.joinGame(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
-    public String listGamesHandler(String json){
-        ListGamesRequest req = listDeserializer.convert(json);
+    public void listGamesHandler(Context context){
+        String authToken = AuthHandler.doAuth(context);
+        if(authToken==null){
+            return;
+        }
+
+        ListGamesRequest req = listDeserializer
+                .convert(context.body())
+                .withAuth(authToken);
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
         ListGamesResult res = gameService.listGames(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
-    public String createGameHandler(String json){
-        CreateGameRequest req = createDeserializer.convert(json);
+    public void createGameHandler(Context context){
+        String authToken = AuthHandler.doAuth(context);
+        if(authToken==null){
+            return;
+        }
+
+        CreateGameRequest req = createDeserializer
+                .convert(context.body())
+                .withAuth(authToken);
+        if(RequestFormHelper.isMissingFields(req)){
+            RequestFormHelper.blockRequest(context);
+            return;
+        }
+
         CreateGameResult res = gameService.createGame(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
 

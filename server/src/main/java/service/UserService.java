@@ -43,7 +43,7 @@ public class UserService {
                 return new LoginResult(401,"Error: unauthorized");
             }
         } catch (DataAccessException e) {
-            return new LoginResult(400, e.getMessage());
+            return new LoginResult(401, e.getMessage());
         }
 
         String authToken = Util.newUUID();

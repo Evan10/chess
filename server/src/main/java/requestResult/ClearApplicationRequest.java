@@ -1,4 +1,7 @@
 package requestResult;
 
-public record ClearApplicationRequest() {
+public record ClearApplicationRequest()  implements NullCheckable{
+    public boolean containsNullField(){
+        return false;
+    }
 }

@@ -34,13 +34,13 @@ public class MemoryGameDAO implements GameDAO{
 
     @Override
     public void deleteGame(String gameID) throws DataAccessException {
-        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Game not found");
+        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Error: Game not found");
         allGameData.remove(gameID);
     }
 
     @Override
     public GameData getGame(String gameID) throws DataAccessException{
-        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Game not found");
+        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Error: Game not found");
         return allGameData.get(gameID);
     }
 

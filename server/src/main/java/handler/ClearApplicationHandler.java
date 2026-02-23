@@ -1,5 +1,6 @@
 package handler;
 
+import io.javalin.http.Context;
 import requestResult.ClearApplicationRequest;
 import requestResult.ClearApplicationResult;
 import service.ClearApplicationService;
@@ -16,10 +17,11 @@ public class ClearApplicationHandler {
         serializer = ResultToJsonStringConverter.getInstance();
     }
 
-    public String handleClearApplication(String json){
-        ClearApplicationRequest req = deserializer.convert(json);
+    public void handleClearApplication(Context context){
+        ClearApplicationRequest req = deserializer.convert(context.body());
         ClearApplicationResult res = clearAppService.clear(req);
-        return serializer.resToString(res);
+        context.status(res.responseCode());
+        context.result(serializer.resToString(res));
     }
 
 }

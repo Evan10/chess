@@ -27,13 +27,13 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public void addAuthData(AuthData userData) throws DataAccessException {
-        if(data.containsKey(userData.authToken())) throw new DataAccessException("Auth Token already in use");
+        if(data.containsKey(userData.authToken())) throw new DataAccessException("Error: Auth Token already in use");
         data.put(userData.authToken(),userData);
     }
 
     @Override
     public void removeAuthData(String authToken) throws DataAccessException {
-        if(!data.containsKey(authToken)) throw new DataAccessException("User not found");
+        if(!data.containsKey(authToken)) throw new DataAccessException("Error: User not found");
         data.remove(authToken);
     }
 
