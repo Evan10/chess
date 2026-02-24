@@ -1,6 +1,10 @@
 package requestResult;
 
-public record ListGamesResult(int responseCode, String message, String games) {
+import model.GameData;
+
+import java.util.Collection;
+
+public record ListGamesResult(int responseCode, String message, Collection<GameData> games) {
     public ListGamesResult(int responseCode, String message){
         this(responseCode, message,null);
     }

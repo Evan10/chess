@@ -4,7 +4,7 @@ import model.AuthData;
 
 public record ListGamesRequest(AuthData authData) implements NullCheckable, Authorizable<ListGamesRequest>{
     public boolean containsNullField(){
-        return authData == null || authData.username() == null || authData.authToken() == null;
+        return authData == null || !authData.isValid();
     }
 
     @Override

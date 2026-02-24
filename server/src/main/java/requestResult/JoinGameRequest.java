@@ -4,8 +4,9 @@ import model.AuthData;
 
 public record JoinGameRequest(String playerColor, String gameID, AuthData authData) implements NullCheckable, Authorizable<JoinGameRequest>{
     public boolean containsNullField(){
-        return playerColor == null || gameID == null || authData == null
-        || authData.authToken() == null || authData.username() == null;
+        return playerColor == null || playerColor.isBlank()
+                || gameID == null || gameID.isBlank()
+                || authData == null || !authData.isValid();
     }
 
     @Override

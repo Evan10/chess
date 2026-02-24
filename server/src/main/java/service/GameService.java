@@ -13,48 +13,54 @@ public class GameService {
 
     private final GameDAO gameDAO;
 
-    public GameService(GameDAO gameDAO){
-        this.gameDAO=gameDAO;
+    public GameService(GameDAO gameDAO) {
+        this.gameDAO = gameDAO;
     }
 
-    public @NotNull ListGamesResult listGames(ListGamesRequest req){
-        String gameList = gameDAO.getGameList().toString();
-        return new ListGamesResult(200,gameList);
+    public @NotNull ListGamesResult listGames(ListGamesRequest req) {
+        return new ListGamesResult(200, null, gameDAO.getGameList());
     }
 
-    public @NotNull CreateGameResult createGame(CreateGameRequest req){
+    public @NotNull CreateGameResult createGame(CreateGameRequest req) {
         ChessGame game = new ChessGame();
-        String gameID = Util.newUUID();
-        GameData gameData = new GameData(gameID,null,null,req.gameName(),game);
+        String gameID = Integer.toString(Util.newIntID());
+        GameData gameData = new GameData(gameID, null, null, req.gameName(), game);
         gameDAO.putGame(gameData);
 
-        return new CreateGameResult(200,"");
+        return new CreateGameResult(200, "", gameID);
     }
 
-    public @NotNull JoinGameResult joinGame(JoinGameRequest req){
+    public @NotNull JoinGameResult joinGame(JoinGameRequest req) {
         try {
             GameData g = gameDAO.getGame(req.gameID());
+            if (invalidTeamColor(req.playerColor())) {
+                return new JoinGameResult(util.Constants.BAD_REQUEST, "Error: invalid team color");
+            }
             boolean joinBlack = req.playerColor().equals(Constants.BLACK_TEAM);
             boolean available = joinBlack
-                    ?g.blackUsername() == null
-                    :g.whiteUsername() == null;
-            if(!available){
-                return new JoinGameResult(util.Constants.BAD_REQUEST,"Error: spot already taken");
+                    ? g.blackUsername() == null
+                    : g.whiteUsername() == null;
+            if (!available) {
+                return new JoinGameResult(util.Constants.FORBIDDEN, "Error: spot already taken");
             }
             GameData newData;
-            if(joinBlack){
-                 newData = new GameData(g.gameID(),g.whiteUsername(),
-                        req.authData().username(),g.gameName(),g.game());
-            }else{
-                newData = new GameData(g.gameID(),req.authData().username(),
-                        g.blackUsername(),g.gameName(),g.game());
+            if (joinBlack) {
+                newData = new GameData(g.gameID(), g.whiteUsername(),
+                        req.authData().username(), g.gameName(), g.game());
+            } else {
+                newData = new GameData(g.gameID(), req.authData().username(),
+                        g.blackUsername(), g.gameName(), g.game());
             }
             gameDAO.putGame(newData);
         } catch (DataAccessException e) {
-            return new JoinGameResult(util.Constants.NOT_FOUND,"Error: game not found");
+            return new JoinGameResult(util.Constants.NOT_FOUND, "Error: game not found");
         }
 
-        return new JoinGameResult(200,"");
+        return new JoinGameResult(200, "");
     }
 
+
+    private boolean invalidTeamColor(String color) {
+        return color == null || color.isBlank() || !(color.equals(Constants.BLACK_TEAM) || color.equals(Constants.WHITE_TEAM));
+    }
 }

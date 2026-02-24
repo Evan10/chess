@@ -5,7 +5,7 @@ import model.AuthData;
 public record CreateGameRequest(String gameName, AuthData authData) implements NullCheckable, Authorizable<CreateGameRequest>{
     public boolean containsNullField(){
         return gameName == null || authData == null
-                || authData.authToken() == null || authData.username() == null;
+                || !authData.isValid();
     }
 
     @Override
