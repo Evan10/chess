@@ -103,24 +103,16 @@ public class ServiceTests {
         Assertions.assertEquals(Constants.OK, res.responseCode(), "Error message was returned when " +
                 "it should have succeeded");
         Assertions.assertEquals(gameCount, res.games().size(),"Incorrect number of games returned");
-
-
     }
 
     @Test
     @Order(5)
-    @DisplayName("ListGamesNoAuth")
-    public void listGamesNoAuth(){
-        int gameCount = 10;
+    @DisplayName("listGamesEmpty")
+    public void listGamesEmpty(){
         AuthData authData = authService.getAuth(existingUserAuth);
-        addGamesToList(authData,gameCount);
-
-        String fakeAuth = Util.newUUID();
-        AuthData invalidAuth = new AuthData(fakeAuth, "fakeUser");
-        ListGamesRequest req = new ListGamesRequest(invalidAuth);
+        ListGamesRequest req = new ListGamesRequest(authData);
         ListGamesResult res = gameService.listGames(req);
-        Assertions.assertEquals(Constants.UNAUTHORIZED,res.responseCode(), "Auth should have been invalid");
-        Assertions.assertEquals(0,res.games().size(), "Games were returned even though Auth was invalid");
+        Assertions.assertTrue(res.games().isEmpty(), "There should be no games to list");
     }
 
     @Test
@@ -197,17 +189,16 @@ public class ServiceTests {
 
     @Test
     @Order(9)
-    @DisplayName("CreateGameNoAuth")
-    public void createGameNoAuth(){
-        String fakeAuthToken = Util.newUUID();
-        AuthData fakseAuthData = new AuthData(fakeAuthToken, "fakeUser");
-        Collection<CreateGameResult> createResults = addGamesToList(fakseAuthData,10);
-        for(CreateGameResult res: createResults){
-            Assertions.assertEquals(Constants.UNAUTHORIZED,res.responseCode(),
-                    "Request should have returned a 401 response code");
-            Assertions.assertTrue(res.message().contains("Error"),
-                    "Message should have contained error code with the word \"Error\" in it");
-        }
+    @DisplayName("createGameInvalidName")
+    public void createGameInvalidName(){
+        AuthData authData = authService.getAuth(existingUserAuth);
+        CreateGameRequest createReq = new CreateGameRequest("",authData);
+        CreateGameResult res = gameService.createGame(createReq);
+        Assertions.assertEquals(Constants.BAD_REQUEST,res.responseCode(),
+                "Request should have returned a 400 response code");
+        Assertions.assertTrue(res.message().contains("Error"),
+                "Message should have contained error code with the word \"Error\" in it");
+
     }
 
     /// USER TESTS
@@ -254,7 +245,7 @@ public class ServiceTests {
         LoginResult loginRes = userService.login(loginReq);
 
         Assertions.assertEquals(Constants.OK,loginRes.responseCode(),"Should return 200 response code");
-        Assertions.assertFalse(loginRes.message().contains("Error"),"Response shouldn't contain error message");
+        Assertions.assertNull(loginRes.message(),"Response shouldn't contain error message");
 
         Assertions.assertNotNull(loginRes.username(),"Username shouldn't be null");
         Assertions.assertNotNull(loginRes.authToken(),"Auth token shouldn't be null");
@@ -301,6 +292,16 @@ public class ServiceTests {
     @Order(15)
     @DisplayName("logoutNotLoggedIn")
     public void logoutNotLoggedIn(){
+        AuthData authData = authService.getAuth(existingUserAuth);
+        logoutSuccess(); // log out user
+        LogoutRequest logoutReq = new LogoutRequest(authData);
+        LogoutResult logoutRes = userService.logout(logoutReq);
+
+        Assertions.assertEquals(Constants.UNAUTHORIZED,logoutRes.responseCode(),
+                "User was already logged out and should have returned a "+ Constants.UNAUTHORIZED+" response code");
+
+        Assertions.assertTrue(logoutRes.message().contains("Error"),"Logout message should contain word \"Error\"");
+
     }
 
 

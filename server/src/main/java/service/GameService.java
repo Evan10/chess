@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.Constants;
 import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
+import model.AuthData;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestResult.*;
@@ -22,6 +23,10 @@ public class GameService {
     }
 
     public @NotNull CreateGameResult createGame(CreateGameRequest req) {
+        if(req.gameName().isBlank()){
+            return new CreateGameResult(util.Constants.BAD_REQUEST,"Error: can't have blank display name");
+        }
+
         ChessGame game = new ChessGame();
         String gameID = Integer.toString(Util.newIntID());
         GameData gameData = new GameData(gameID, null, null, req.gameName(), game);

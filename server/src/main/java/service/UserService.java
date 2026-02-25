@@ -37,16 +37,16 @@ public class UserService {
                     registerRequest.password(),registerRequest.email());
             userDAO.addUser(userData);
         }catch (DataAccessException e){
-            return new RegisterResult(403,e.getMessage());
+            return new RegisterResult(Constants.FORBIDDEN,e.getMessage());
         }
         String authToken = Util.newUUID();
         AuthData authData = new AuthData(authToken,registerRequest.username());
         try {
             authDAO.addAuthData(authData);
         } catch (DataAccessException e) {
-            return new RegisterResult(500,e.getMessage());
+            return new RegisterResult(Constants.SERVER_ERROR,e.getMessage());
         }
-        return new RegisterResult(200,null,registerRequest.username(),authToken);
+        return new RegisterResult(Constants.OK,null,registerRequest.username(),authToken);
 
     }
 
@@ -55,10 +55,10 @@ public class UserService {
             UserData userData = userDAO.getUser(loginRequest.username());
             boolean correctPassword = userData.password().equals(loginRequest.password());
             if(!correctPassword){
-                return new LoginResult(401,"Error: unauthorized");
+                return new LoginResult(Constants.UNAUTHORIZED,"Error: unauthorized");
             }
         } catch (DataAccessException e) {
-            return new LoginResult(401, e.getMessage());
+            return new LoginResult(Constants.UNAUTHORIZED, e.getMessage());
         }
 
         String authToken = Util.newUUID();
@@ -66,21 +66,18 @@ public class UserService {
         try {
             authDAO.addAuthData(authData);
         } catch (DataAccessException e) {
-            return new LoginResult(500,e.getMessage());
+            return new LoginResult(Constants.SERVER_ERROR,e.getMessage());
         }
-        return new LoginResult(200,null,loginRequest.username(),authToken);
+        return new LoginResult(Constants.OK,null,loginRequest.username(),authToken);
     }
 
 
     public LogoutResult logout(LogoutRequest logoutRequest) {
-        if(logoutRequest.authData().authToken().isBlank())
-            return new LogoutResult(401, "Error: unauthorized");
         try {
             authDAO.removeAuthData(logoutRequest.authData().authToken());
         } catch (DataAccessException e) {
-            return new LogoutResult(400,e.getMessage());
+            return new LogoutResult(Constants.UNAUTHORIZED,e.getMessage());
         }
-
-        return new LogoutResult(200,"");
+        return new LogoutResult(Constants.OK,"");
     }
 }
