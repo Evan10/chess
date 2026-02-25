@@ -2,16 +2,14 @@ package service;
 
 import dataAccess.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import requestResult.*;
 import util.Constants;
 import util.Util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class ServiceTests {
 
@@ -24,22 +22,17 @@ public class ServiceTests {
     private static GameService gameService;
     private static UserService userService;
 
-    private static UserDAO userDAO;
-    private static GameDAO gameDAO;
-    private static AuthDAO authDAO;
-    private static Collection<DAO> allDAOs;
-
     @BeforeAll
     static void setup(){
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
-        authDAO = new MemoryAuthDAO();
-        allDAOs = List.of(userDAO,gameDAO,authDAO);
+        UserDAO userDAO = new MemoryUserDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        Collection<DAO> allDAOs = List.of(userDAO, gameDAO, authDAO);
 
         authService = new AuthService(authDAO);
         clearApplicationService = new ClearApplicationService(allDAOs);
         gameService = new GameService(gameDAO);
-        userService = new UserService(userDAO,authDAO);
+        userService = new UserService(userDAO, authDAO);
 
         existingUser = new UserData("bobby","securePassword","email@gmail.com");
         nonExistingUser = new UserData("notBobby","badPassword","notEmail@gmail.com");
@@ -115,30 +108,103 @@ public class ServiceTests {
     @Order(5)
     @DisplayName("ListGamesNoAuth")
     public void listGamesNoAuth(){
+        int gameCount = 10;
+        AuthData authData = authService.getAuth(existingUserAuth);
+        addGamesToList(authData,gameCount);
+
+        String fakeAuth = Util.newUUID();
+        AuthData invalidAuth = new AuthData(fakeAuth, "fakeUser");
+        ListGamesRequest req = new ListGamesRequest(invalidAuth);
+        ListGamesResult res = gameService.listGames(req);
+        Assertions.assertEquals(Constants.UNAUTHORIZED,res.responseCode(), "Auth should have been invalid");
+        Assertions.assertEquals(0,res.games().size(), "Games were returned even though Auth was invalid");
     }
 
     @Test
     @Order(6)
     @DisplayName("JoinGameSuccess")
     public void joinGameSuccess(){
+        AuthData authData = authService.getAuth(existingUserAuth);
+        CreateGameResult createRes = addGamesToList(authData,1).stream().toList().getFirst();
+
+        String gameID = createRes.gameID();
+
+        JoinGameRequest joinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, authData);
+        JoinGameResult joinRes = gameService.joinGame(joinReq);
+        Assertions.assertEquals(Constants.OK,joinRes.responseCode());
+
+        ListGamesRequest listReq = new ListGamesRequest(authData);
+        ListGamesResult listRes = gameService.listGames(listReq);
+        GameData gameData = listRes.games().stream()
+                .filter((gd)->gd.gameID().equals(gameID))
+                .toList().getFirst();
+
+        Assertions.assertEquals(authData.username(),gameData.blackUsername(),
+                "User was not selected as black player");
+
     }
 
     @Test
     @Order(7)
     @DisplayName("JoinGameSpotTaken")
     public void joinGameSpotTaken(){
+
+        AuthData authData = authService.getAuth(existingUserAuth);
+        CreateGameResult createRes = addGamesToList(authData,1).stream().toList().getFirst();
+
+        String gameID = createRes.gameID();
+
+        RegisterRequest registerReq = new RegisterRequest("SpotTaker","ITookSpot","spottaker@gmai.com");
+        RegisterResult registerRes = userService.register(registerReq);
+        AuthData spotTakerAuthData = new AuthData(registerRes.authToken(),registerRes.username());
+
+        JoinGameRequest joinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, spotTakerAuthData);
+        JoinGameResult joinRes = gameService.joinGame(joinReq);
+        Assertions.assertEquals(Constants.OK,joinRes.responseCode());
+
+        JoinGameRequest failJoinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, authData);
+        JoinGameResult failJoinRes = gameService.joinGame(joinReq);
+        Assertions.assertNotEquals(Constants.OK,failJoinRes.responseCode(),"Should have return an error");
+
+        ListGamesRequest listReq = new ListGamesRequest(authData);
+        ListGamesResult listRes = gameService.listGames(listReq);
+        GameData gameData = listRes.games().stream()
+                .filter((gd)->gd.gameID().equals(gameID))
+                .toList().getFirst();
+
+        Assertions.assertNotEquals(authData.username(),gameData.blackUsername(),
+                "User should not be black player, but they are");
+
     }
 
     @Test
     @Order(8)
     @DisplayName("CreateGameSuccess")
     public void createGameSuccess(){
+        AuthData authData = authService.getAuth(existingUserAuth);
+        Collection<CreateGameResult> createResults = addGamesToList(authData,10);
+        for(CreateGameResult res: createResults){
+            Assertions.assertEquals(Constants.OK,res.responseCode(),
+                    "Request should have returned a 200 response code");
+            Assertions.assertFalse(res.gameID().isBlank(),
+                    "Response was successful but no game id was provided");
+        }
+
     }
 
     @Test
     @Order(9)
     @DisplayName("CreateGameNoAuth")
     public void createGameNoAuth(){
+        String fakeAuthToken = Util.newUUID();
+        AuthData fakseAuthData = new AuthData(fakeAuthToken, "fakeUser");
+        Collection<CreateGameResult> createResults = addGamesToList(fakseAuthData,10);
+        for(CreateGameResult res: createResults){
+            Assertions.assertEquals(Constants.UNAUTHORIZED,res.responseCode(),
+                    "Request should have returned a 401 response code");
+            Assertions.assertTrue(res.message().contains("Error"),
+                    "Message should have contained error code with the word \"Error\" in it");
+        }
     }
 
     /// USER TESTS
@@ -147,6 +213,7 @@ public class ServiceTests {
     @Order(10)
     @DisplayName("registerValid")
     public void registerValid(){
+
     }
 
     @Test
