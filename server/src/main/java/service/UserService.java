@@ -6,10 +6,12 @@ import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
 import requestResult.*;
+import util.Constants;
 import util.Util;
 
 public class UserService {
 
+    private final boolean enforceSecurePasswords = false;
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
     public UserService(UserDAO userDAO, AuthDAO authDAO){
@@ -18,6 +20,18 @@ public class UserService {
     }
 
     public RegisterResult register(RegisterRequest registerRequest) {
+        if(registerRequest.containsNullField()){
+            return new RegisterResult(Constants.BAD_REQUEST,"Error: Request contains null field(s)");
+        }
+
+        if(enforceSecurePasswords){
+            Util.PasswordValidationResult passwordRes = Util.isValidPassword(registerRequest.password());
+            if(!passwordRes.isValid()){
+                return new RegisterResult(Constants.BAD_REQUEST,
+                        "Error: invalid password \n"+passwordRes.reason());
+            }
+        }
+
         try{
             UserData userData = new UserData(registerRequest.username(),
                     registerRequest.password(),registerRequest.email());
@@ -35,6 +49,7 @@ public class UserService {
         return new RegisterResult(200,null,registerRequest.username(),authToken);
 
     }
+
     public LoginResult login(LoginRequest loginRequest) {
         try {
             UserData userData = userDAO.getUser(loginRequest.username());
@@ -60,7 +75,6 @@ public class UserService {
     public LogoutResult logout(LogoutRequest logoutRequest) {
         if(logoutRequest.authData().authToken().isBlank())
             return new LogoutResult(401, "Error: unauthorized");
-
         try {
             authDAO.removeAuthData(logoutRequest.authData().authToken());
         } catch (DataAccessException e) {

@@ -9,7 +9,10 @@ import requestResult.*;
 import util.Constants;
 import util.Util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class ServiceTests {
 
@@ -213,31 +216,85 @@ public class ServiceTests {
     @Order(10)
     @DisplayName("registerValid")
     public void registerValid(){
+        RegisterRequest registerReq = new RegisterRequest(nonExistingUser.username(),
+                nonExistingUser.password(),nonExistingUser.email());
+        RegisterResult registerRes = userService.register(registerReq);
 
+        Assertions.assertEquals(Constants.OK,registerRes.responseCode(),"Result should have return a 200 response code");
+        Assertions.assertFalse(registerRes.authToken().isBlank(),"Result is missing an auth token");
+        Assertions.assertFalse(registerRes.username().isBlank(), "Result is missing username");
+
+        AuthData authData = authService.getAuth(registerRes.authToken());
+
+        Assertions.assertEquals(authData.username(),registerReq.username(),"Username returned by auth service was incorrect");
+        Assertions.assertEquals(authData.authToken(),registerRes.authToken(),"Auth Token returned by auth service was incorrect");
     }
 
     @Test
     @Order(11)
     @DisplayName("registerInvalidNoPassword")
     public void registerInvalidNoPassword(){
+        RegisterRequest registerReq = new RegisterRequest(nonExistingUser.username(),
+                null,nonExistingUser.email());
+        System.out.println(registerReq);
+        RegisterResult registerRes = userService.register(registerReq);
+        System.out.println(registerRes);
+        Assertions.assertEquals(Constants.BAD_REQUEST,registerRes.responseCode(), "Result should return a 400 response code");
+        Assertions.assertTrue(registerRes.message().contains("Error"),"Result should contain an error message containing the word \"Error\"");
+        Assertions.assertNull(registerRes.username(), "Username should be null");
+        Assertions.assertNull(registerRes.authToken(), "AuthToken should be null");
+
     }
 
     @Test
     @Order(12)
     @DisplayName("loginExistingUser")
     public void loginExistingUser(){
+        LoginRequest loginReq = new LoginRequest(existingUser.username(),existingUser.password());
+        LoginResult loginRes = userService.login(loginReq);
+
+        Assertions.assertEquals(Constants.OK,loginRes.responseCode(),"Should return 200 response code");
+        Assertions.assertFalse(loginRes.message().contains("Error"),"Response shouldn't contain error message");
+
+        Assertions.assertNotNull(loginRes.username(),"Username shouldn't be null");
+        Assertions.assertNotNull(loginRes.authToken(),"Auth token shouldn't be null");
+
+        Assertions.assertFalse(loginRes.authToken().isBlank(), "Response should return valid authToken");
+        Assertions.assertFalse(loginRes.username().isBlank(), "Response should return valid username");
+
+        AuthData authData = authService.getAuth(loginRes.authToken());
+
+        Assertions.assertEquals(authData.authToken(),loginRes.authToken(),"Incorrect auth token was returned by auth service");
+        Assertions.assertEquals(authData.username(),loginRes.username(),"Incorrect username was returned by auth service");
     }
 
     @Test
     @Order(13)
     @DisplayName("loginNonExistingUser")
     public void loginNonExistingUser(){
+        LoginRequest loginReq = new LoginRequest(nonExistingUser.username(),nonExistingUser.password());
+        LoginResult loginRes = userService.login(loginReq);
+
+        Assertions.assertEquals(Constants.UNAUTHORIZED,loginRes.responseCode(),
+                "Should return "+ Constants.UNAUTHORIZED + " response code");
+        Assertions.assertTrue(loginRes.message().contains("Error"),"Response should error message with word \"Error\"");
+        Assertions.assertNull(loginRes.authToken(), "Response shouldn't return authToken");
+        Assertions.assertNull(loginRes.username(), "Response shouldn't return username");
     }
 
     @Test
     @Order(14)
     @DisplayName("logoutSuccess")
     public void logoutSuccess(){
+        AuthData authData = authService.getAuth(existingUserAuth);
+        LogoutRequest logoutReq = new LogoutRequest(authData);
+        LogoutResult logoutRes = userService.logout(logoutReq);
+
+        Assertions.assertEquals(Constants.OK,logoutRes.responseCode(), "Logout should have been successful");
+
+        AuthData loggedOutAuthData = authService.getAuth(authData.authToken());
+        assertNullOrEmpty(loggedOutAuthData);
+
     }
 
     @Test
@@ -259,5 +316,40 @@ public class ServiceTests {
     }
 
 
+    /*
+    * Asserts that an object is either null or that all non-primitive fields are null
+    * due to the nature of primitives never being null and having default values they
+    * are ignored. Static fields are ignored
+    * It expects all non-primitive non-static fields to be null and will NOT recursively check objects
+    *
+    * */
+    private void assertNullOrEmpty(Object obj){
+        if(obj != null){
+            Class<?> objClass = obj.getClass();
+            List<Field> fields = getAllClassFields(objClass);
+            for(Field f:fields){
+                Class<?> clazz = f.getType();
+                if(clazz.isPrimitive() || Modifier.isStatic(f.getModifiers())){
+                    continue;
+                }
+                f.setAccessible(true);
+                try {
+                    Assertions.assertNull(f.get(obj), objClass.getName()+ " was expected to be null or empty but was not");
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private List<Field> getAllClassFields(Class<?> objClass){
+        Class<?> clazz = objClass;
+        ArrayList<Field> fields = new ArrayList<>(Arrays.stream(objClass.getDeclaredFields()).toList());
+        while(clazz.getSuperclass() != null){
+            clazz = clazz.getSuperclass();
+            fields.addAll(Arrays.stream(clazz.getDeclaredFields()).toList());
+        }
+        return fields;
+    }
 
 }
