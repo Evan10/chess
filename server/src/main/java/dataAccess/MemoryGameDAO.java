@@ -14,9 +14,8 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public boolean clear() {
+    public void clear() {
         allGameData.clear();
-        return true;
     }
 
     @Override
@@ -34,11 +33,6 @@ public class MemoryGameDAO implements GameDAO{
         allGameData.put(game.gameID(), game);
     }
 
-    @Override
-    public void deleteGame(String gameID) throws DataAccessException {
-        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Error: Game not found");
-        allGameData.remove(gameID);
-    }
 
     @Override
     public GameData getGame(String gameID) throws DataAccessException{

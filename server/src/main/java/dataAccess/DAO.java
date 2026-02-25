@@ -1,6 +1,7 @@
 package dataAccess;
 
+@SuppressWarnings("RedundantThrows")
 public interface DAO {
-    boolean clear();
+    void clear() throws DataAccessException;
     boolean isEmpty();
 }

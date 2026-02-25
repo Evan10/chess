@@ -13,9 +13,8 @@ public class MemoryAuthDAO implements AuthDAO{
     }
 
     @Override
-    public boolean clear() {
+    public void clear(){
         data.clear();
-        return true;
     }
 
     @Override
@@ -24,7 +23,10 @@ public class MemoryAuthDAO implements AuthDAO{
     }
 
     @Override
-    public AuthData getAuthDataWithAuthToken(String authToken) {
+    public AuthData getAuthDataWithAuthToken(String authToken) throws DataAccessException {
+        if(!data.containsKey(authToken)){
+            throw new DataAccessException("Token not found");
+        }
         return data.get(authToken);
     }
 

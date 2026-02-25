@@ -1,6 +1,7 @@
 package service;
 
 import dataAccess.DAO;
+import dataAccess.DataAccessException;
 import requestResult.ClearApplicationRequest;
 import requestResult.ClearApplicationResult;
 import util.Constants;
@@ -21,8 +22,11 @@ public class ClearApplicationService {
         }
         boolean success = true;
         for(DAO dao : dataAccessObjects){
-             if(!dao.clear())
-                 success = false;
+            try {
+                dao.clear();
+            } catch (DataAccessException e) {
+                success = false;
+            }
         }
         int responseCode = success? Constants.OK :Constants.SERVER_ERROR;
         String message = success?"":"Error: Unable to clear application data";

@@ -5,9 +5,6 @@ import java.util.List;
 
 public class KingTargetedUtil {
 
-    KingTargetedUtil(){
-    }
-
     public static boolean pieceTargeted(ChessBoard board, ChessPosition myPosition){
         Collection<ChessDirection> directions = List.of(ChessDirection.UP,
                 ChessDirection.DOWN,ChessDirection.LEFT,

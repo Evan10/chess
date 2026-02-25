@@ -14,9 +14,8 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public boolean clear() {
+    public void clear() {
         allUserData.clear();
-        return true;
     }
 
     @Override

@@ -160,7 +160,7 @@ public class ServiceTests {
         Assertions.assertEquals(Constants.OK,joinRes.responseCode());
 
         JoinGameRequest failJoinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, authData);
-        JoinGameResult failJoinRes = gameService.joinGame(joinReq);
+        JoinGameResult failJoinRes = gameService.joinGame(failJoinReq);
         Assertions.assertNotEquals(Constants.OK,failJoinRes.responseCode(),"Should have return an error");
 
         ListGamesRequest listReq = new ListGamesRequest(authData);
