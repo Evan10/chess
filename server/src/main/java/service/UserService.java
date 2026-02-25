@@ -11,7 +11,7 @@ import util.Util;
 
 public class UserService {
 
-    private final boolean enforceSecurePasswords = false;
+    private static final boolean enforceSecurePasswords = false;
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
     public UserService(UserDAO userDAO, AuthDAO authDAO){
