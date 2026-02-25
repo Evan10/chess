@@ -2,15 +2,10 @@ package handler;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
-
-import kotlin.Pair;
 import model.AuthData;
-import model.UserData;
 import org.jetbrains.annotations.NotNull;
 import service.AuthService;
 import util.Constants;
-
-import java.util.Optional;
 
 public class AuthHandler implements Handler {
 
@@ -21,7 +16,7 @@ public class AuthHandler implements Handler {
     }
 
     @Override
-    public void handle(@NotNull Context context) throws Exception {
+    public void handle(@NotNull Context context) {
         String authToken = context.header(Constants.AUTH_TOKEN);
         AuthData authData= authService.getAuth(authToken);
         if(authData == null || authData.username().isBlank()){

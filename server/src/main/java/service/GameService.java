@@ -4,7 +4,6 @@ import chess.ChessGame;
 import chess.Constants;
 import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
-import model.AuthData;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestResult.*;
@@ -19,7 +18,10 @@ public class GameService {
     }
 
     public @NotNull ListGamesResult listGames(ListGamesRequest req) {
-        return new ListGamesResult(200, null, gameDAO.getGameList());
+        if(req == null){
+            return new ListGamesResult(util.Constants.SERVER_ERROR,"Error: no request object provided");
+        }
+        return new ListGamesResult(util.Constants.OK, null, gameDAO.getGameList());
     }
 
     public @NotNull CreateGameResult createGame(CreateGameRequest req) {
@@ -32,7 +34,7 @@ public class GameService {
         GameData gameData = new GameData(gameID, null, null, req.gameName(), game);
         gameDAO.putGame(gameData);
 
-        return new CreateGameResult(200, "", gameID);
+        return new CreateGameResult(util.Constants.OK, "", gameID);
     }
 
     public @NotNull JoinGameResult joinGame(JoinGameRequest req) {
@@ -61,7 +63,7 @@ public class GameService {
             return new JoinGameResult(util.Constants.NOT_FOUND, "Error: game not found");
         }
 
-        return new JoinGameResult(200, "");
+        return new JoinGameResult(util.Constants.OK, "");
     }
 
 

@@ -3,10 +3,9 @@ package dataAccess;
 import model.UserData;
 
 public interface UserDAO extends DAO{
-
-    public boolean usernameInUse(String username);
-    public void addUser(UserData userData) throws DataAccessException;
-    public void updateUser(String username, UserData userData) throws DataAccessException;
-    public UserData getUser(String username) throws DataAccessException;
-    public void deleteUser(String username) throws DataAccessException;
+    boolean usernameInUse(String username);
+    void addUser(UserData userData) throws DataAccessException;
+    void updateUser(String username, UserData userData) throws DataAccessException;
+    UserData getUser(String username) throws DataAccessException;
+    void deleteUser(String username) throws DataAccessException;
 }

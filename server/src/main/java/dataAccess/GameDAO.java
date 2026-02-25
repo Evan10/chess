@@ -6,8 +6,8 @@ import java.util.Collection;
 
 public interface GameDAO extends DAO{
 
-    public Collection<GameData> getGameList();
-    public GameData getGame(String gameID) throws DataAccessException;
-    public void putGame(GameData game);
-    public void deleteGame(String gameID) throws DataAccessException;
+    Collection<GameData> getGameList();
+    GameData getGame(String gameID) throws DataAccessException;
+    void putGame(GameData game);
+    void deleteGame(String gameID) throws DataAccessException;
 }

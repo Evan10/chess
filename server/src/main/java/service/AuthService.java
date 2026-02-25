@@ -2,11 +2,8 @@ package service;
 
 import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
-import kotlin.Pair;
 import model.AuthData;
-import model.UserData;
 
-import java.util.Optional;
 
 
 public class AuthService {

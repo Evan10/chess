@@ -3,7 +3,6 @@ package handler;
 import io.javalin.http.Context;
 import model.AuthData;
 import requestResult.*;
-
 import service.UserService;
 
 public class UserHandler {

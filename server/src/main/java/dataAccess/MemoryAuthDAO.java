@@ -1,7 +1,6 @@
 package dataAccess;
 
 import model.AuthData;
-import model.UserData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,6 @@ public class MemoryAuthDAO implements AuthDAO{
     private final Map<String, AuthData> data;
     public MemoryAuthDAO(){
         data = new HashMap<>();
-
     }
 
     @Override

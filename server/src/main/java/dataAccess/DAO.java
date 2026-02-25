@@ -1,6 +1,6 @@
 package dataAccess;
 
 public interface DAO {
-    public boolean clear();
-    public boolean isEmpty();
+    boolean clear();
+    boolean isEmpty();
 }
