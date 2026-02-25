@@ -25,4 +25,14 @@ public class ClearApplicationService {
         return new ClearApplicationResult(responseCode,message);
     }
 
+    //Not a handler endpoint; used for unit testing
+    public boolean areDAOsEmpty(){
+        for(DAO dao : dataAccessObjects){
+            if(!dao.isEmpty()){
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

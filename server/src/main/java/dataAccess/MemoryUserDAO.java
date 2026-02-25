@@ -18,6 +18,12 @@ public class MemoryUserDAO implements UserDAO{
         allUserData.clear();
         return true;
     }
+
+    @Override
+    public boolean isEmpty() {
+        return allUserData.isEmpty();
+    }
+
     public boolean usernameInUse(String username){
         return allUserData.containsKey(username);
     }

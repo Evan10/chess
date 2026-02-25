@@ -22,6 +22,11 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
+    public boolean isEmpty() {
+        return allGameData.isEmpty();
+    }
+
+    @Override
     public Collection<GameData> getGameList() {
         return allGameData.values();
     }

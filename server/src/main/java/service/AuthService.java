@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class AuthService {
 
-    private AuthDAO authDAO;
+    private final AuthDAO authDAO;
 
     public AuthService(AuthDAO authDAO){
         this.authDAO=authDAO;

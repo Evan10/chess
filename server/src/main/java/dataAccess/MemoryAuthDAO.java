@@ -21,6 +21,11 @@ public class MemoryAuthDAO implements AuthDAO{
     }
 
     @Override
+    public boolean isEmpty() {
+        return data.isEmpty();
+    }
+
+    @Override
     public AuthData getAuthDataWithAuthToken(String authToken) {
         return data.get(authToken);
     }
