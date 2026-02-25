@@ -1,4 +1,4 @@
-package dataAccess;
+package dataaccess;
 
 @SuppressWarnings("RedundantThrows")
 public interface DAO {

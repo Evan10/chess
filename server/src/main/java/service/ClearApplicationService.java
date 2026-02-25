@@ -1,7 +1,7 @@
 package service;
 
-import dataAccess.DAO;
-import dataAccess.DataAccessException;
+import dataaccess.DAO;
+import dataaccess.DataAccessException;
 import requestResult.ClearApplicationRequest;
 import requestResult.ClearApplicationResult;
 import util.Constants;

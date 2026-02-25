@@ -2,8 +2,8 @@ package service;
 
 import chess.ChessGame;
 import chess.Constants;
-import dataAccess.DataAccessException;
-import dataAccess.GameDAO;
+import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestResult.*;
