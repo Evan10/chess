@@ -55,22 +55,27 @@ public class ServiceTests {
 
     @Test
     @Order(1)
-    @DisplayName("AuthTest")
-    public void authTest() {
+    @DisplayName("AuthTokenStoredCorrect")
+    public void authCorrectlySaved() {
         AuthData authData = authService.getAuth(existingUserAuth);
         Assertions.assertNotNull(authData);
         Assertions.assertTrue(authData.isValid(), "AuthToken was valid but was not accepted");
         Assertions.assertEquals(authData.username(), existingUser.username(),
                 "AuthData returned with incorrect username");
-
-        String fakeAuth = Util.newUUID();
-        AuthData fakeAuthData = authService.getAuth(fakeAuth);
-        Assertions.assertNull(fakeAuthData, "Invalid authToken was accepted but should have return null");
     }
 
     @Test
     @Order(2)
-    @DisplayName("ClearAppTest")
+    @DisplayName("AuthTokenNotFound")
+    public void authTokenNotFound() {
+        String fakeAuth = Util.newUUID();
+        AuthData authData = authService.getAuth(fakeAuth);
+        Assertions.assertNull(authData, "Invalid authToken was accepted but should have return null");
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("ClearAppWorksCorrectly")
     public void clearAppCorrectly() {
         AuthData authData = authService.getAuth(existingUserAuth);
         CreateGameRequest createGameReq = new CreateGameRequest("Game", authData);
@@ -87,9 +92,9 @@ public class ServiceTests {
     }
 
     @Test
-    @Order(3)
-    @DisplayName("ListGameTest")
-    public void listGamesTest() {
+    @Order(4)
+    @DisplayName("ListGamesAuth")
+    public void listGamesWithAuth() {
         int gameCount = 10;
         AuthData authData = authService.getAuth(existingUserAuth);
         addGamesToList(authData, gameCount);
@@ -100,17 +105,22 @@ public class ServiceTests {
         Assertions.assertEquals(Constants.OK, res.responseCode(), "Error message was returned when " +
                 "it should have succeeded");
         Assertions.assertEquals(gameCount, res.games().size(), "Incorrect number of games returned");
-
-
-        clearApplicationService.clear(new ClearApplicationRequest());
-        ListGamesResult emptyRes = gameService.listGames(req);
-        Assertions.assertTrue(emptyRes.games().isEmpty(), "There should be no games to list");
     }
 
     @Test
-    @Order(4)
-    @DisplayName("JoinGameTest")
-    public void joinGameTest() {
+    @Order(5)
+    @DisplayName("listGamesEmpty")
+    public void listGamesEmpty() {
+        AuthData authData = authService.getAuth(existingUserAuth);
+        ListGamesRequest req = new ListGamesRequest(authData);
+        ListGamesResult res = gameService.listGames(req);
+        Assertions.assertTrue(res.games().isEmpty(), "There should be no games to list");
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("JoinGameSuccess")
+    public void joinGameSuccess() {
         AuthData authData = authService.getAuth(existingUserAuth);
         CreateGameResult createRes = addGamesToList(authData, 1).stream().toList().getFirst();
 
@@ -129,32 +139,45 @@ public class ServiceTests {
         Assertions.assertEquals(authData.username(), gameData.blackUsername(),
                 "User was not selected as black player");
 
-        //Spot Taken
-        RegisterRequest registerRequest = new RegisterRequest(nonExistingUser.username(),
-                nonExistingUser.password(),nonExistingUser.username());
+    }
 
-        RegisterResult registerResult = userService.register(registerRequest);
-        AuthData newUserAuthData = authService.getAuth(registerResult.authToken());
+    @Test
+    @Order(7)
+    @DisplayName("JoinGameSpotTaken")
+    public void joinGameSpotTaken() {
 
-        JoinGameRequest failJoinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, newUserAuthData);
+        AuthData authData = authService.getAuth(existingUserAuth);
+        CreateGameResult createRes = addGamesToList(authData, 1).stream().toList().getFirst();
+
+        String gameID = createRes.gameID();
+
+        RegisterRequest registerReq = new RegisterRequest("SpotTaker", "ITookSpot", "spottaker@gmai.com");
+        RegisterResult registerRes = userService.register(registerReq);
+        AuthData spotTakerAuthData = new AuthData(registerRes.authToken(), registerRes.username());
+
+        JoinGameRequest joinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, spotTakerAuthData);
+        JoinGameResult joinRes = gameService.joinGame(joinReq);
+        Assertions.assertEquals(Constants.OK, joinRes.responseCode());
+
+        JoinGameRequest failJoinReq = new JoinGameRequest(chess.Constants.BLACK_TEAM, gameID, authData);
         JoinGameResult failJoinRes = gameService.joinGame(failJoinReq);
         Assertions.assertNotEquals(Constants.OK, failJoinRes.responseCode(), "Should have return an error");
 
-        ListGamesRequest failListReq = new ListGamesRequest(authData);
-        ListGamesResult failListRes = gameService.listGames(failListReq);
-        GameData failGameData = failListRes.games().stream()
+        ListGamesRequest listReq = new ListGamesRequest(authData);
+        ListGamesResult listRes = gameService.listGames(listReq);
+        GameData gameData = listRes.games().stream()
                 .filter((gd) -> gd.gameID().equals(gameID))
                 .toList().getFirst();
 
-        Assertions.assertNotEquals(newUserAuthData.username(), failGameData.blackUsername(),
+        Assertions.assertNotEquals(authData.username(), gameData.blackUsername(),
                 "User should not be black player, but they are");
 
     }
 
     @Test
-    @Order(5)
-    @DisplayName("CreateGameTest")
-    public void createGameTest() {
+    @Order(8)
+    @DisplayName("CreateGameSuccess")
+    public void createGameSuccess() {
         AuthData authData = authService.getAuth(existingUserAuth);
         Collection<CreateGameResult> createResults = addGamesToList(authData, 10);
         for (CreateGameResult res : createResults) {
@@ -164,6 +187,13 @@ public class ServiceTests {
                     "Response was successful but no game id was provided");
         }
 
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("createGameInvalidName")
+    public void createGameInvalidName() {
+        AuthData authData = authService.getAuth(existingUserAuth);
         CreateGameRequest createReq = new CreateGameRequest("", authData);
         CreateGameResult res = gameService.createGame(createReq);
         Assertions.assertEquals(Constants.BAD_REQUEST, res.responseCode(),
@@ -176,9 +206,9 @@ public class ServiceTests {
     /// USER TESTS
 
     @Test
-    @Order(6)
-    @DisplayName("registerTest")
-    public void registerTest() {
+    @Order(10)
+    @DisplayName("registerValid")
+    public void registerValid() {
         RegisterRequest registerReq = new RegisterRequest(nonExistingUser.username(),
                 nonExistingUser.password(), nonExistingUser.email());
         RegisterResult registerRes = userService.register(registerReq);
@@ -191,21 +221,28 @@ public class ServiceTests {
 
         Assertions.assertEquals(authData.username(), registerReq.username(), "Username returned by auth service was incorrect");
         Assertions.assertEquals(authData.authToken(), registerRes.authToken(), "Auth Token returned by auth service was incorrect");
+    }
 
-        RegisterRequest failRegisterReq = new RegisterRequest(nonExistingUser.username(),
+    @Test
+    @Order(11)
+    @DisplayName("registerInvalidNoPassword")
+    public void registerInvalidNoPassword() {
+        RegisterRequest registerReq = new RegisterRequest(nonExistingUser.username(),
                 null, nonExistingUser.email());
-        RegisterResult failRegisterRes = userService.register(failRegisterReq);
-        Assertions.assertEquals(Constants.BAD_REQUEST, failRegisterRes.responseCode(), "Result should return a 400 response code");
-        Assertions.assertTrue(failRegisterRes.message().contains("Error"), "Result should contain an error message containing the word \"Error\"");
-        Assertions.assertNull(failRegisterRes.username(), "Username should be null");
-        Assertions.assertNull(failRegisterRes.authToken(), "AuthToken should be null");
+        System.out.println(registerReq);
+        RegisterResult registerRes = userService.register(registerReq);
+        System.out.println(registerRes);
+        Assertions.assertEquals(Constants.BAD_REQUEST, registerRes.responseCode(), "Result should return a 400 response code");
+        Assertions.assertTrue(registerRes.message().contains("Error"), "Result should contain an error message containing the word \"Error\"");
+        Assertions.assertNull(registerRes.username(), "Username should be null");
+        Assertions.assertNull(registerRes.authToken(), "AuthToken should be null");
 
     }
 
     @Test
-    @Order(7)
-    @DisplayName("loginTest")
-    public void loginTest() {
+    @Order(12)
+    @DisplayName("loginExistingUser")
+    public void loginExistingUser() {
         LoginRequest loginReq = new LoginRequest(existingUser.username(), existingUser.password());
         LoginResult loginRes = userService.login(loginReq);
 
@@ -222,21 +259,26 @@ public class ServiceTests {
 
         Assertions.assertEquals(authData.authToken(), loginRes.authToken(), "Incorrect auth token was returned by auth service");
         Assertions.assertEquals(authData.username(), loginRes.username(), "Incorrect username was returned by auth service");
-
-        LoginRequest failLoginReq = new LoginRequest(nonExistingUser.username(), nonExistingUser.password());
-        LoginResult failLoginRes = userService.login(failLoginReq);
-
-        Assertions.assertEquals(Constants.UNAUTHORIZED, failLoginRes.responseCode(),
-                "Should return " + Constants.UNAUTHORIZED + " response code");
-        Assertions.assertTrue(failLoginRes.message().contains("Error"), "Response should error message with word \"Error\"");
-        Assertions.assertNull(failLoginRes.authToken(), "Response shouldn't return authToken");
-        Assertions.assertNull(failLoginRes.username(), "Response shouldn't return username");
     }
 
     @Test
-    @Order(8)
+    @Order(13)
+    @DisplayName("loginNonExistingUser")
+    public void loginNonExistingUser() {
+        LoginRequest loginReq = new LoginRequest(nonExistingUser.username(), nonExistingUser.password());
+        LoginResult loginRes = userService.login(loginReq);
+
+        Assertions.assertEquals(Constants.UNAUTHORIZED, loginRes.responseCode(),
+                "Should return " + Constants.UNAUTHORIZED + " response code");
+        Assertions.assertTrue(loginRes.message().contains("Error"), "Response should error message with word \"Error\"");
+        Assertions.assertNull(loginRes.authToken(), "Response shouldn't return authToken");
+        Assertions.assertNull(loginRes.username(), "Response shouldn't return username");
+    }
+
+    @Test
+    @Order(14)
     @DisplayName("logoutSuccess")
-    public void logoutTest() {
+    public void logoutSuccess() {
         AuthData authData = authService.getAuth(existingUserAuth);
         LogoutRequest logoutReq = new LogoutRequest(authData);
         LogoutResult logoutRes = userService.logout(logoutReq);
@@ -246,14 +288,21 @@ public class ServiceTests {
         AuthData loggedOutAuthData = authService.getAuth(authData.authToken());
         assertNullOrEmpty(loggedOutAuthData);
 
+    }
 
-        //call same request on now logged out user
-        LogoutResult failLogoutRes = userService.logout(logoutReq);
+    @Test
+    @Order(15)
+    @DisplayName("logoutNotLoggedIn")
+    public void logoutNotLoggedIn() {
+        AuthData authData = authService.getAuth(existingUserAuth);
+        logoutSuccess(); // log out user
+        LogoutRequest logoutReq = new LogoutRequest(authData);
+        LogoutResult logoutRes = userService.logout(logoutReq);
 
-        Assertions.assertEquals(Constants.UNAUTHORIZED, failLogoutRes.responseCode(),
+        Assertions.assertEquals(Constants.UNAUTHORIZED, logoutRes.responseCode(),
                 "User was already logged out and should have returned a " + Constants.UNAUTHORIZED + " response code");
 
-        Assertions.assertTrue(failLogoutRes.message().contains("Error"), "Logout message should contain word \"Error\"");
+        Assertions.assertTrue(logoutRes.message().contains("Error"), "Logout message should contain word \"Error\"");
 
     }
 
