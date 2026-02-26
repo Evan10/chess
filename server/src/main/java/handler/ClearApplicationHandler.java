@@ -19,6 +19,11 @@ public class ClearApplicationHandler {
 
     public void handleClearApplication(Context context){
         ClearApplicationRequest req = deserializer.convert(context.body());
+        // req object is kept to allow for future change in
+        // required data but is empty and currently returns null
+        if(req==null){
+            req = new ClearApplicationRequest();
+        }
         ClearApplicationResult res = clearAppService.clear(req);
         context.status(res.responseCode());
         context.result(serializer.resToString(res));

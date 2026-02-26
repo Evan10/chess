@@ -11,7 +11,7 @@ public class Util {
     }
 
     public static int newIntID(){
-        return new Random().nextInt();
+        return Math.abs(new Random().nextInt());
     }
 
     public record PasswordValidationResult(String reason, boolean isValid) {
