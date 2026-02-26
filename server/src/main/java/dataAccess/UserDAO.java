@@ -7,9 +7,9 @@ public interface UserDAO extends DAO {
 
     void addUser(UserData userData) throws DataAccessException;
 
-    void updateUser(String username, UserData userData) throws DataAccessException;
+    //void updateUser(String username, UserData userData) throws DataAccessException;
 
     UserData getUser(String username) throws DataAccessException;
 
-    void deleteUser(String username) throws DataAccessException;
+    //void deleteUser(String username) throws DataAccessException;
 }
