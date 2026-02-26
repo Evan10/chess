@@ -170,7 +170,10 @@ public class LegalMoveUtil {
     }
 
     private static Collection<ChessMove> pawnPromotions(ChessPosition start, ChessPosition end) {
-        return List.of(new ChessMove(start, end, ChessPiece.PieceType.BISHOP), new ChessMove(start, end, ChessPiece.PieceType.KNIGHT), new ChessMove(start, end, ChessPiece.PieceType.ROOK), new ChessMove(start, end, ChessPiece.PieceType.QUEEN));
+        return List.of(new ChessMove(start, end, ChessPiece.PieceType.BISHOP),
+                new ChessMove(start, end, ChessPiece.PieceType.KNIGHT),
+                new ChessMove(start, end, ChessPiece.PieceType.ROOK),
+                new ChessMove(start, end, ChessPiece.PieceType.QUEEN));
     }
 
     private static Collection<ChessMove> getValidInLine(ChessBoard board, ChessDirection dir, ChessPosition pos) {
