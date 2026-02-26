@@ -1,9 +1,9 @@
 package chess;
 
 public class Utils {
-    
-    
-    public static ChessPiece[][] getNewBoard(){
+
+
+    public static ChessPiece[][] getNewBoard() {
         ChessPiece bK = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
         ChessPiece bQ = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
         ChessPiece bKn = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
@@ -19,14 +19,14 @@ public class Utils {
         ChessPiece wP = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 
         return new ChessPiece[][]{
-                {wR,  wKn, wB,  wQ,  wK,  wB,  wKn, wR},
-                {wP,  wP,  wP,  wP,  wP,  wP,  wP,  wP},
-                {null,null,null,null,null,null,null,null},
-                {null,null,null,null,null,null,null,null},
-                {null,null,null,null,null,null,null,null},
-                {null,null,null,null,null,null,null,null},
-                {bP,  bP,  bP,  bP,  bP,  bP,  bP,  bP},
-                {bR,  bKn, bB,  bQ,  bK,  bB,  bKn, bR}};
+                {wR, wKn, wB, wQ, wK, wB, wKn, wR},
+                {wP, wP, wP, wP, wP, wP, wP, wP},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {bP, bP, bP, bP, bP, bP, bP, bP},
+                {bR, bKn, bB, bQ, bK, bB, bKn, bR}};
     }
 
 

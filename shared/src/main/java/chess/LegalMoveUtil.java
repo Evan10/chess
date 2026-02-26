@@ -6,7 +6,7 @@ import java.util.List;
 
 public class LegalMoveUtil {
 
-    LegalMoveUtil(){
+    LegalMoveUtil() {
     }
 
     public static Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
@@ -124,11 +124,8 @@ public class LegalMoveUtil {
                     cm.addAll(pawnPromotions(myPosition, straight));
                 } else {
                     cm.add(new ChessMove(myPosition, straight, null));
-                    if (doubleStraight.isValid() && pawnCanLongJump(board, myPosition)) {
-                        p = board.getPiece(doubleStraight); // double can only occur if a straight move is valid
-                        if (p == null) {
-                            cm.add(new ChessMove(myPosition, doubleStraight, null));
-                        }
+                    if (doubleStraight.isValid() && pawnCanLongJump(board, myPosition) && board.getPiece(doubleStraight) == null) {
+                        cm.add(new ChessMove(myPosition, doubleStraight, null));
                     }
                 }
             }
@@ -173,10 +170,7 @@ public class LegalMoveUtil {
     }
 
     private static Collection<ChessMove> pawnPromotions(ChessPosition start, ChessPosition end) {
-        return List.of(new ChessMove(start, end, ChessPiece.PieceType.BISHOP),
-                new ChessMove(start, end, ChessPiece.PieceType.KNIGHT),
-                new ChessMove(start, end, ChessPiece.PieceType.ROOK),
-                new ChessMove(start, end, ChessPiece.PieceType.QUEEN));
+        return List.of(new ChessMove(start, end, ChessPiece.PieceType.BISHOP), new ChessMove(start, end, ChessPiece.PieceType.KNIGHT), new ChessMove(start, end, ChessPiece.PieceType.ROOK), new ChessMove(start, end, ChessPiece.PieceType.QUEEN));
     }
 
     private static Collection<ChessMove> getValidInLine(ChessBoard board, ChessDirection dir, ChessPosition pos) {

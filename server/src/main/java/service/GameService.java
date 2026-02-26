@@ -6,7 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
-import requestResult.*;
+import requestresult.*;
 import util.Util;
 
 public class GameService {
@@ -18,15 +18,15 @@ public class GameService {
     }
 
     public @NotNull ListGamesResult listGames(ListGamesRequest req) {
-        if(req == null){
-            return new ListGamesResult(util.Constants.SERVER_ERROR,"Error: no request object provided");
+        if (req == null) {
+            return new ListGamesResult(util.Constants.SERVER_ERROR, "Error: no request object provided");
         }
         return new ListGamesResult(util.Constants.OK, null, gameDAO.getGameList());
     }
 
     public @NotNull CreateGameResult createGame(CreateGameRequest req) {
-        if(req.gameName().isBlank()){
-            return new CreateGameResult(util.Constants.BAD_REQUEST,"Error: can't have blank display name");
+        if (req.gameName().isBlank()) {
+            return new CreateGameResult(util.Constants.BAD_REQUEST, "Error: can't have blank display name");
         }
 
         ChessGame game = new ChessGame();

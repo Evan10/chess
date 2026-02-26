@@ -200,7 +200,7 @@ public class DatabaseTests {
     }
 
     private Class<?> findDatabaseManager() throws ClassNotFoundException {
-        if(databaseManagerClass != null) {
+        if (databaseManagerClass != null) {
             return databaseManagerClass;
         }
 
@@ -210,7 +210,8 @@ public class DatabaseTests {
                 clazz.getDeclaredMethod("getConnection");
                 databaseManagerClass = clazz;
                 return clazz;
-            } catch (ReflectiveOperationException ignored) {}
+            } catch (ReflectiveOperationException ignored) {
+            }
         }
         throw new ClassNotFoundException("Unable to load database in order to verify persistence. " +
                 "Are you using DatabaseManager to set your credentials? " +

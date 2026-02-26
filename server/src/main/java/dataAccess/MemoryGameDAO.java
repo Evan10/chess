@@ -6,10 +6,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MemoryGameDAO implements GameDAO{
+public class MemoryGameDAO implements GameDAO {
 
     private final Map<String, GameData> allGameData;
-    public MemoryGameDAO(){
+
+    public MemoryGameDAO() {
         allGameData = new HashMap<>();
     }
 
@@ -35,8 +36,10 @@ public class MemoryGameDAO implements GameDAO{
 
 
     @Override
-    public GameData getGame(String gameID) throws DataAccessException{
-        if(!allGameData.containsKey(gameID)) throw new DataAccessException("Error: Game not found");
+    public GameData getGame(String gameID) throws DataAccessException {
+        if (!allGameData.containsKey(gameID)) {
+            throw new DataAccessException("Error: Game not found");
+        }
         return allGameData.get(gameID);
     }
 

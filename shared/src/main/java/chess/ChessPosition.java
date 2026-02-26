@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
-    public static final ChessPosition INVALID_POSITION = new ChessPosition(-1,-1);
+    public static final ChessPosition INVALID_POSITION = new ChessPosition(-1, -1);
 
     private final int row;
     private final int col;
@@ -20,7 +20,7 @@ public class ChessPosition {
         this.col = col;
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         return row > 0 && row <= 8 && col > 0 && col <= 8;
     }
 
@@ -41,8 +41,8 @@ public class ChessPosition {
     }
 
     @Override
-    public String toString(){
-        return "["+row+","+col+"]";
+    public String toString() {
+        return "[" + row + "," + col + "]";
     }
 
     @Override

@@ -18,6 +18,7 @@ public class ChessBoard {
     public ChessBoard() {
         board = new ChessPiece[8][8];
     }
+
     public ChessBoard(ChessBoard cb) {
         board = Arrays.stream(cb.board)
                 .map(ChessPiece[]::clone)
@@ -27,14 +28,19 @@ public class ChessBoard {
 
     public void movePiece(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = getPiece(move.getStartPosition());
-        if(piece == null) throw new InvalidMoveException("Invalid move, Piece not found");
+        if (piece == null) {
+            throw new InvalidMoveException("Invalid move, Piece not found");
+        }
 
         ChessPiece.PieceType type = move.getPromotionPiece();
-        if(type !=null) piece = new ChessPiece(piece.getTeamColor(),type);
+        if (type != null) {
+            piece = new ChessPiece(piece.getTeamColor(), type);
+        }
 
-        addPiece(move.getStartPosition(),null);
-        addPiece(move.getEndPosition(),piece);
+        addPiece(move.getStartPosition(), null);
+        addPiece(move.getEndPosition(), piece);
     }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -42,7 +48,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        board[position.getRow()-1][position.getColumn()-1] = piece;
+        board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -53,34 +59,38 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return board[position.getRow()-1][position.getColumn()-1];
+        return board[position.getRow() - 1][position.getColumn() - 1];
     }
 
-    public ChessPosition getKingPosition(ChessGame.TeamColor color){
-        for (int x = 1; x <= 8; x++)
+    public ChessPosition getKingPosition(ChessGame.TeamColor color) {
+        for (int x = 1; x <= 8; x++) {
             for (int y = 1; y <= 8; y++) {
-                ChessPosition pos = new ChessPosition(y,x);
+                ChessPosition pos = new ChessPosition(y, x);
                 ChessPiece p = getPiece(pos);
-                if (p!= null && p.getTeamColor() == color && p.getPieceType() == ChessPiece.PieceType.KING){
+                if (p != null && p.getTeamColor() == color && p.getPieceType() == ChessPiece.PieceType.KING) {
                     return pos;
                 }
             }
+        }
 
         return ChessPosition.INVALID_POSITION;
     }
 
 
-    public Collection<ChessPosition> getTeamPieceLocs(ChessGame.TeamColor color){
+    public Collection<ChessPosition> getTeamPieceLocs(ChessGame.TeamColor color) {
         ArrayList<ChessPosition> locs = new ArrayList<>();
-        for (int x = 0; x < 8; x++)
+        for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                ChessPosition pos = new ChessPosition(y+1,x+1);
+                ChessPosition pos = new ChessPosition(y + 1, x + 1);
                 ChessPiece p = getPiece(pos);
-                if (p != null && p.getTeamColor() == color)
+                if (p != null && p.getTeamColor() == color) {
                     locs.add(new ChessPosition(y + 1, x + 1));
+                }
             }
+        }
         return locs;
     }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -90,14 +100,14 @@ public class ChessBoard {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        for(int x = 0; x < 8;x++){
-            for(int y = 0; y < 8;y++) {
-                ChessPiece gp = getPiece(new ChessPosition(y+1,x+1));
-                if(gp == null){
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                ChessPiece gp = getPiece(new ChessPosition(y + 1, x + 1));
+                if (gp == null) {
                     sb.append("   |");
-                }else{
+                } else {
                     sb.append(gp.toStringShort());
                     sb.append("|");
                 }
@@ -121,7 +131,7 @@ public class ChessBoard {
         return Arrays.deepHashCode(board);
     }
 
-    public ChessBoard copy(){
+    public ChessBoard copy() {
         return new ChessBoard(this);
     }
 }

@@ -14,6 +14,7 @@ import java.util.Objects;
 public class ChessGame {
     ChessBoard cboard;
     TeamColor teamTurn;
+
     public ChessGame() {
         cboard = new ChessBoard();
         cboard.resetBoard();
@@ -36,7 +37,7 @@ public class ChessGame {
         teamTurn = team;
     }
 
-    public void toggleTeamTurn(){
+    public void toggleTeamTurn() {
         teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
@@ -57,10 +58,12 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = cboard.getPiece(startPosition);
-        if(piece == null) return List.of();
-        Collection<ChessMove> potentialMoves = piece.pieceMoves(cboard,startPosition);
+        if (piece == null) {
+            return List.of();
+        }
+        Collection<ChessMove> potentialMoves = piece.pieceMoves(cboard, startPosition);
         ArrayList<ChessMove> allowedMoves = new ArrayList<>();
-        for(ChessMove move: potentialMoves){
+        for (ChessMove move : potentialMoves) {
             ChessBoard testBoard = cboard.copy();
 
             try {
@@ -69,9 +72,11 @@ public class ChessGame {
                 throw new RuntimeException(e);
             }
 
-            ChessPosition KingPos = testBoard.getKingPosition(piece.getTeamColor());
-            if(!KingPos.isValid()) throw new RuntimeException("King not found");
-            if(!KingTargetedUtil.pieceTargeted(testBoard,KingPos)){
+            ChessPosition kingPos = testBoard.getKingPosition(piece.getTeamColor());
+            if (!kingPos.isValid()) {
+                throw new RuntimeException("King not found");
+            }
+            if (!KingTargetedUtil.pieceTargeted(testBoard, kingPos)) {
                 allowedMoves.add(move);
             }
         }
@@ -87,12 +92,11 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         Collection<ChessMove> legalMoves = validMoves(move.getStartPosition());
         ChessPiece piece = cboard.getPiece(move.getStartPosition());
-        if(!legalMoves.contains(move)){
-            throw new InvalidMoveException("The move "+ move +" is invalid");
-        }else if(piece.getTeamColor() != getTeamTurn()){
+        if (!legalMoves.contains(move)) {
+            throw new InvalidMoveException("The move " + move + " is invalid");
+        } else if (piece.getTeamColor() != getTeamTurn()) {
             throw new InvalidMoveException("Incorrect player made a move");
-        }
-        else {
+        } else {
             cboard.movePiece(move);
             toggleTeamTurn();
         }
@@ -105,9 +109,11 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition KingPos = cboard.getKingPosition(teamColor);
-        if(!KingPos.isValid()) throw new RuntimeException("King not found");
-        return KingTargetedUtil.pieceTargeted(cboard,KingPos);
+        ChessPosition kingPos = cboard.getKingPosition(teamColor);
+        if (!kingPos.isValid()) {
+            throw new RuntimeException("King not found");
+        }
+        return KingTargetedUtil.pieceTargeted(cboard, kingPos);
     }
 
     /**
@@ -131,11 +137,15 @@ public class ChessGame {
         return noValidMoves(teamColor) && !isInCheck(teamColor);
     }
 
-    private boolean noValidMoves(TeamColor teamColor){
+    private boolean noValidMoves(TeamColor teamColor) {
         Collection<ChessPosition> teamPieceLocations = cboard.getTeamPieceLocs(teamColor);
-        if(teamPieceLocations.isEmpty()) return true;
-        for(ChessPosition pos : teamPieceLocations){
-            if(!validMoves(pos).isEmpty()) return false;
+        if (teamPieceLocations.isEmpty()) {
+            return true;
+        }
+        for (ChessPosition pos : teamPieceLocations) {
+            if (!validMoves(pos).isEmpty()) {
+                return false;
+            }
         }
         return true;
     }

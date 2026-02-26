@@ -1,9 +1,12 @@
-package requestResult;
+package requestresult;
 
 import model.AuthData;
+import requestresult.interfaces.Authorizable;
+import requestresult.interfaces.NullCheckable;
 
-public record JoinGameRequest(String playerColor, String gameID, AuthData authData) implements NullCheckable, Authorizable<JoinGameRequest>{
-    public boolean containsNullField(){
+public record JoinGameRequest(String playerColor, String gameID,
+                              AuthData authData) implements NullCheckable, Authorizable<JoinGameRequest> {
+    public boolean containsNullField() {
         return playerColor == null || playerColor.isBlank()
                 || gameID == null || gameID.isBlank()
                 || authData == null || !authData.isValid();
