@@ -8,8 +8,12 @@ import java.sql.Connection;
 public class DatabaseUserDAO implements UserDAO {
     private final Connection connection;
 
-    public DatabaseUserDAO(Connection connection) {
-        this.connection = connection;
+    public DatabaseUserDAO() {
+        try {
+            this.connection = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

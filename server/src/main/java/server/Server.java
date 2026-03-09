@@ -11,8 +11,12 @@ import service.ClearApplicationService;
 import service.GameService;
 import service.UserService;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+
+import static util.readProperties.readPropertiesFile;
 
 public class Server {
 
@@ -21,9 +25,10 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = DAOFactory.getAuthDAO();
+        GameDAO gameDAO = DAOFactory.getGameDAO();
+        UserDAO userDAO = DAOFactory.getUserDAO();
+
 
         AuthService authService = new AuthService(authDAO);
         GameService gameService = new GameService(gameDAO);

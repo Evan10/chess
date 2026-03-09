@@ -1,5 +1,7 @@
 package dataaccess;
 
+import chess.ChessGame;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -14,6 +16,18 @@ public class DatabaseManager {
      */
     static {
         loadPropertiesFromResources();
+        try {
+            initializeDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    static public void initializeDatabase() throws DataAccessException{
+        createDatabase();
+        createTables();
+
     }
 
     /**
@@ -27,6 +41,43 @@ public class DatabaseManager {
         } catch (SQLException ex) {
             throw new DataAccessException("failed to create database", ex);
         }
+    }
+
+    static public void createTables() throws DataAccessException{
+        Connection conn = getConnection();
+
+        String users = """
+                CREATE TABLE IF NOT EXISTS users(
+                username varchar(255) NOT NULL,
+                password_hash varchar(255) NOT NULL,
+                email varchar(255),
+                PRIMARY KEY (username));""";
+        String games ="""
+                CREATE TABLE IF NOT EXISTS games(
+                gameID varchar(255) NOT NULL,
+                whiteUsername varchar(255),
+                blackUsername varchar(255),
+                gameName varchar(255) NOT NULL,
+                gameJSON TEXT,
+                PRIMARY KEY (gameID),
+                FOREIGN KEY (whiteUsername) REFERENCES users(username),
+                FOREIGN KEY (blackUsername) REFERENCES users(username));""";
+        String auth = """
+                CREATE TABLE IF NOT EXISTS authentication(
+                username varchar(255) NOT NULL,
+                authenticationToken varchar(255) NOT NULL,
+                PRIMARY KEY (authenticationToken),
+                FOREIGN KEY (username) REFERENCES users(username));""";
+
+
+        try {
+            conn.prepareStatement(users).executeUpdate();
+            conn.prepareStatement(games).executeUpdate();
+            conn.prepareStatement(auth).executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**

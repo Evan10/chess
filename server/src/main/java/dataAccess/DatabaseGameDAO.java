@@ -9,8 +9,12 @@ import java.util.List;
 public class DatabaseGameDAO implements GameDAO{
     private final Connection connection;
 
-    public DatabaseGameDAO(Connection connection) {
-        this.connection = connection;
+    public DatabaseGameDAO() {
+        try {
+            this.connection = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

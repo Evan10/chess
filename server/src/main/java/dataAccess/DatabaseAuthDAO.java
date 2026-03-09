@@ -8,8 +8,12 @@ public class DatabaseAuthDAO implements AuthDAO{
 
     private final Connection connection;
 
-    public DatabaseAuthDAO(Connection connection) {
-        this.connection = connection;
+    public DatabaseAuthDAO() {
+        try {
+            this.connection = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
