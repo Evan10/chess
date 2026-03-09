@@ -10,18 +10,20 @@ import service.AuthService;
 import service.ClearApplicationService;
 import service.GameService;
 import service.UserService;
+import util.MyLogger;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import static util.readProperties.readPropertiesFile;
 
 public class Server {
 
     private final Javalin javalin;
-
+    private final static Logger logger = MyLogger.getLogger();
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -46,7 +48,7 @@ public class Server {
         AuthHandler authHandler = new AuthHandler(authService);
 
         // Register your endpoints and exception handlers here.
-        javalin.before(context -> System.out.println(context.body()))
+        javalin.before(context -> logger.info(context.body()))
                 .before(authHandler)
                 .delete("/db", clearApplicationHandler::handleClearApplication)
                 .post("/user", userHandler::registerHandler)
@@ -55,7 +57,7 @@ public class Server {
                 .get("/game", chessGameHandler::listGamesHandler)
                 .post("/game", chessGameHandler::createGameHandler)
                 .put("/game", chessGameHandler::joinGameHandler)
-                .after(context -> System.out.println(context.status() + " " + context.result()));
+                .after(context -> logger.info(context.status() + " " + context.result()));
     }
 
     public int run(int desiredPort) {

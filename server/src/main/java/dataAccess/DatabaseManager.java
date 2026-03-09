@@ -51,6 +51,8 @@ public class DatabaseManager {
                 username varchar(255) NOT NULL,
                 password_hash varchar(255) NOT NULL,
                 email varchar(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (username));""";
         String games ="""
                 CREATE TABLE IF NOT EXISTS games(
@@ -59,6 +61,8 @@ public class DatabaseManager {
                 blackUsername varchar(255),
                 gameName varchar(255) NOT NULL,
                 gameJSON TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (gameID),
                 FOREIGN KEY (whiteUsername) REFERENCES users(username),
                 FOREIGN KEY (blackUsername) REFERENCES users(username));""";
@@ -66,6 +70,8 @@ public class DatabaseManager {
                 CREATE TABLE IF NOT EXISTS authentication(
                 username varchar(255) NOT NULL,
                 authenticationToken varchar(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (authenticationToken),
                 FOREIGN KEY (username) REFERENCES users(username));""";
 
