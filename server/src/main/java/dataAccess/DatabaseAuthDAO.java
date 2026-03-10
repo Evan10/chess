@@ -1,19 +1,19 @@
 package dataaccess;
 
 import model.AuthData;
+import util.MyLogger;
 
 import java.sql.*;
+import java.util.logging.Logger;
+
+import static dataaccess.DataAccessException.*;
+import static dataaccess.DatabaseManager.getConnection;
 
 public class DatabaseAuthDAO implements AuthDAO{
 
-    private final Connection connection;
+    private static Logger logger = MyLogger.getLogger();
 
-    public DatabaseAuthDAO() {
-        try {
-            this.connection = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    protected DatabaseAuthDAO() {
     }
 
     @Override
@@ -24,18 +24,22 @@ public class DatabaseAuthDAO implements AuthDAO{
             WHERE authenticationToken = ?
             """;
 
-        try(PreparedStatement ps = connection.prepareStatement(statement)) {
+        try(PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.setString(1,authToken);
             try(ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
-                    return null;
+                    throw new DataAccessException("Error: invalid authToken", INVALID_REQUEST_ERROR);
                 }
                 return new AuthData(
                         rs.getString("authenticationToken"),
                         rs.getString("username"));
             }
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            logger.warning(e.toString());
+            if (e.getSQLState().startsWith("08")) { // connectivity error
+                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+            }
+            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
         }
     }
 
@@ -46,12 +50,16 @@ public class DatabaseAuthDAO implements AuthDAO{
             (authenticationToken, username)
             VALUES (?, ?)
             """;
-        try(PreparedStatement ps = connection.prepareStatement(statement)) {
+        try(PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.setString(1,userData.authToken());
             ps.setString(2,userData.username());
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            logger.warning(e.toString());
+            if (e.getSQLState().startsWith("08")) { // connectivity error
+                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+            }
+            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
         }
     }
 
@@ -61,11 +69,18 @@ public class DatabaseAuthDAO implements AuthDAO{
             DELETE FROM authentication
             WHERE authenticationToken = ?
             """;
-        try(PreparedStatement ps = connection.prepareStatement(statement)) {
+        try(PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.setString(1,authToken);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+            if(rowsAffected==0){
+                throw new DataAccessException("Error: unauthorized", INVALID_REQUEST_ERROR);
+            }
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            logger.warning(e.toString());
+            if (e.getSQLState().startsWith("08")) { // connectivity error
+                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+            }
+            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
         }
     }
 
@@ -74,16 +89,23 @@ public class DatabaseAuthDAO implements AuthDAO{
         String statement = """
             DELETE FROM authentication
             """;
-
-        try(PreparedStatement ps = connection.prepareStatement(statement)) {
+        try(PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            logger.warning(e.toString());
+            if (e.getSQLState().startsWith("08")) { // connectivity error
+                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+            }
+            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
         }
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        try(Statement s = getConnection().createStatement()){
+            return !s.executeQuery("SELECT 1 FROM authentication LIMIT 1;").next();
+        }catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

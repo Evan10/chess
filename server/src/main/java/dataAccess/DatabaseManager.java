@@ -52,28 +52,37 @@ public class DatabaseManager {
                 password_hash varchar(255) NOT NULL,
                 email varchar(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT
+                    CURRENT_TIMESTAMP 
+                    ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (username));""";
         String games ="""
                 CREATE TABLE IF NOT EXISTS games(
                 gameID varchar(255) NOT NULL,
                 whiteUsername varchar(255),
                 blackUsername varchar(255),
-                gameName varchar(255) NOT NULL,
+                gameName varchar(255) NOT NULL UNIQUE,
                 gameJSON TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (gameID),
-                FOREIGN KEY (whiteUsername) REFERENCES users(username),
-                FOREIGN KEY (blackUsername) REFERENCES users(username));""";
+                FOREIGN KEY (whiteUsername)
+                    REFERENCES users(username)
+                    ON DELETE SET NULL,
+                FOREIGN KEY (blackUsername)
+                    REFERENCES users(username)
+                    ON DELETE SET NULL);""";
         String auth = """
                 CREATE TABLE IF NOT EXISTS authentication(
-                username varchar(255) NOT NULL,
+                username varchar(255),
                 authenticationToken varchar(255) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (authenticationToken),
-                FOREIGN KEY (username) REFERENCES users(username));""";
+                FOREIGN KEY (username)
+                    REFERENCES users(username)
+                    ON DELETE SET NULL);
+                """;
 
 
         try {

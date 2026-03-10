@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import requestresult.*;
 import util.Util;
 
+import static dataaccess.DataAccessException.*;
+import static util.Constants.*;
+
 public class GameService {
 
     private final GameDAO gameDAO;
@@ -19,9 +22,13 @@ public class GameService {
 
     public @NotNull ListGamesResult listGames(ListGamesRequest req) {
         if (req == null) {
-            return new ListGamesResult(util.Constants.SERVER_ERROR, "Error: no request object provided");
+            return new ListGamesResult(SERVER_ERROR, "Error: no request object provided");
         }
-        return new ListGamesResult(util.Constants.OK, null, gameDAO.getGameList());
+        try {
+            return new ListGamesResult(util.Constants.OK, null, gameDAO.getGameList());
+        } catch (DataAccessException e) {
+            return new ListGamesResult(SERVER_ERROR, "Error: there was an issue retrieving games");
+        }
     }
 
     public @NotNull CreateGameResult createGame(CreateGameRequest req) {
@@ -32,7 +39,16 @@ public class GameService {
         ChessGame game = new ChessGame();
         String gameID = Integer.toString(Util.newIntID());
         GameData gameData = new GameData(gameID, null, null, req.gameName(), game);
-        gameDAO.putGame(gameData);
+        try {
+            gameDAO.putGame(gameData);
+        } catch (DataAccessException e) {
+            int errorCode = switch (e.reason){
+                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
+                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
+                default -> SERVER_ERROR;
+            };
+            return new CreateGameResult(errorCode, e.getMessage());
+        }
 
         return new CreateGameResult(util.Constants.OK, "", gameID);
     }
@@ -58,9 +74,14 @@ public class GameService {
                 newData = new GameData(g.gameID(), req.authData().username(),
                         g.blackUsername(), g.gameName(), g.game());
             }
-            gameDAO.putGame(newData);
+            gameDAO.updateGame(newData);
         } catch (DataAccessException e) {
-            return new JoinGameResult(util.Constants.NOT_FOUND, "Error: game not found");
+            int errorCode = switch (e.reason){
+                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
+                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
+                default -> SERVER_ERROR;
+            };
+            return new JoinGameResult(errorCode, e.getMessage());
         }
 
         return new JoinGameResult(util.Constants.OK, "");

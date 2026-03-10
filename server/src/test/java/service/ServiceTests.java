@@ -29,9 +29,9 @@ public class ServiceTests {
 
     @BeforeAll
     static void setup() {
-        UserDAO userDAO = new MemoryUserDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = DAOFactory.getUserDAO();;
+        GameDAO gameDAO = DAOFactory.getGameDAO();;
+        AuthDAO authDAO = DAOFactory.getAuthDAO();;
         Collection<DAO> allDAOs = List.of(userDAO, gameDAO, authDAO);
 
         authService = new AuthService(authDAO);
