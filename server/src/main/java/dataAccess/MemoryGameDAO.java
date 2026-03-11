@@ -36,7 +36,9 @@ public class MemoryGameDAO implements GameDAO {
     public void putGame(GameData game) throws DataAccessException {
         boolean nameInUse = allGameData.values().stream()
                 .anyMatch((gd) -> gd.gameName().equals(game.gameName()));
-        if(nameInUse) throw new InvalidRequestException("Username is already in use");
+        if (nameInUse) {
+            throw new InvalidRequestException("Game name is already in use");
+        }
         allGameData.put(game.gameID(), game);
     }
 
