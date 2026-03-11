@@ -25,7 +25,8 @@ public class DatabaseUserDAO implements UserDAO {
         try(PreparedStatement ps = getConnection().prepareStatement(statement)){
             ps.setString(1, username);
             ResultSet set = ps.executeQuery();
-            return set.next();
+            set.next();
+            return set.getBoolean(1);
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }

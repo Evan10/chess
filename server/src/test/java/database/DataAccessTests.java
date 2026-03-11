@@ -9,14 +9,12 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
-import server.Server;
 import util.Util;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static util.Util.newIntID;
@@ -24,9 +22,9 @@ import static util.Util.newUUID;
 
 public class DataAccessTests {
 
-    private static UserData existingUser =
+    private final static UserData existingUser =
             new UserData("Bobby", "qwerty123","email@email.com");
-    private static UserData nonexistingUser =
+    private final static UserData nonexistingUser =
             new UserData("NotBobby", "notQwerty123","NotEmail@email.com");
     private static AuthDAO authDAO;
     private static GameDAO gameDAO;
@@ -265,38 +263,60 @@ public class DataAccessTests {
     @Order(14)
     @DisplayName("Username in use check")
     void usernameInUseTest(){
-
+        Assertions.assertTrue(userDAO.usernameInUse(existingUser.username()));
+        Assertions.assertFalse(userDAO.usernameInUse(nonexistingUser.username()));
     }
     @Test
     @Order(15)
     @DisplayName("Check username using null")
     void invalidUsernameTest(){
-
+        Assertions.assertFalse(userDAO.usernameInUse(null));
+        Assertions.assertFalse(userDAO.usernameInUse(""));
     }
 
     @Test
     @Order(16)
     @DisplayName("Add User test")
     void addUserTest(){
-
+        Assertions.assertThrowsExactly(InvalidRequestException.class,
+                ()->userDAO.getUser(nonexistingUser.username()),
+                "Error should be thrown when trying to get a nonexisting user");
+        try {
+            userDAO.addUser(nonexistingUser);
+            UserData userData = userDAO.getUser(nonexistingUser.username());
+            Assertions.assertEquals(nonexistingUser,userData, "Incorrect user data was returned from username");
+        } catch (DataAccessException e) {
+            Assertions.fail(e);
+        }
     }
+
     @Test
     @Order(17)
     @DisplayName("Add user username in use")
     void addUserDuplicateUsernameTest(){
-
+        Assertions.assertThrowsExactly(UnavailableRequestException.class,
+                ()->userDAO.addUser(existingUser),
+                "Error should throw when adding a user when the name is already in use");
     }
+
     @Test
     @Order(18)
     @DisplayName("Get user test")
     void getUserTest(){
-
+        try {
+            userDAO.getUser(existingUser.username());
+        } catch (DataAccessException e) {
+            Assertions.fail(e);
+        }
     }
+
     @Test
     @Order(19)
     @DisplayName("get nonexistent user test")
     void getNonexistentUserTest(){
-
+        Assertions.assertThrowsExactly(InvalidRequestException.class,
+                ()->userDAO.getUser(nonexistingUser.username()),
+                "Error should be thrown when trying to get a nonexisting user");
     }
 
 
