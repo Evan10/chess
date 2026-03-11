@@ -232,6 +232,75 @@ public class DataAccessTests {
         Assertions.assertThrowsExactly(InvalidRequestException.class,
                 ()->authDAO.addAuthData(new AuthData(authToken, nonexistingUser.username())));
     }
+
+    @Test
+    @Order(12)
+    @DisplayName("remove AuthData")
+    void removeAuthDataTest(){
+        String authToken = newUUID();
+        Assertions.assertTrue(authDAO.isEmpty(),"No authData should exist at this point");
+        try {
+            authDAO.addAuthData(new AuthData(authToken, existingUser.username()));
+            Assertions.assertFalse(authDAO.isEmpty(),
+                    "AuthData was added but that change is not reflected in database");
+            authDAO.removeAuthData(authToken);
+            Assertions.assertTrue(authDAO.isEmpty());
+        }catch (DataAccessException e){
+            Assertions.fail(e);
+        }
+
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("remove nonexistent authData")
+    void removeInvalidAuthDataTest(){
+        addDataToDAOs();
+        String fakeAuth = newUUID();
+        Assertions.assertThrowsExactly(InvalidRequestException.class,
+                ()->authDAO.removeAuthData(fakeAuth));
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("Username in use check")
+    void usernameInUseTest(){
+
+    }
+    @Test
+    @Order(15)
+    @DisplayName("Check username using null")
+    void invalidUsernameTest(){
+
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("Add User test")
+    void addUserTest(){
+
+    }
+    @Test
+    @Order(17)
+    @DisplayName("Add user username in use")
+    void addUserDuplicateUsernameTest(){
+
+    }
+    @Test
+    @Order(18)
+    @DisplayName("Get user test")
+    void getUserTest(){
+
+    }
+    @Test
+    @Order(19)
+    @DisplayName("get nonexistent user test")
+    void getNonexistentUserTest(){
+
+    }
+
+
+
     /*
     *   X Collection<GameData> getGameList() throws DataAccessException;
     *   X GameData getGame(String gameID) throws DataAccessException;
@@ -240,7 +309,7 @@ public class DataAccessTests {
     *
     *   X AuthData getAuthDataWithAuthToken(String authToken) throws DataAccessException;
     *   X void addAuthData(AuthData userData) throws DataAccessException;
-    *   void removeAuthData(String authToken) throws DataAccessException;
+    *   X void removeAuthData(String authToken) throws DataAccessException;
     *
     *   boolean usernameInUse(String username);
     *   void addUser(UserData userData) throws DataAccessException;
