@@ -2,6 +2,8 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
 import model.GameData;
 import util.MyLogger;
 
@@ -14,11 +16,12 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
+import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
 
 public class DatabaseGameDAO implements GameDAO {
     private final Gson serializer;
 
-    private final static Logger logger = MyLogger.getLogger();
+    private final static Logger LOGGER = MyLogger.getLogger();
 
     protected DatabaseGameDAO() {
         serializer = new Gson();
@@ -46,13 +49,8 @@ public class DatabaseGameDAO implements GameDAO {
             }
             return gameList;
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("42")) {
-                throw new InvalidRequestException("Error: bad request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -82,13 +80,7 @@ public class DatabaseGameDAO implements GameDAO {
                 );
             }
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("42")) {
-                throw new InvalidRequestException("Error: bad request");
-            }
-            throw new DataAccessException(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -106,15 +98,8 @@ public class DatabaseGameDAO implements GameDAO {
             ps.setString(5, serializer.toJson(game.game()));
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("23")) {
-                throw new UnavailableRequestException("Error: Game name already in use");
-            } else if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("42")) {
-                throw new InvalidRequestException("Error: bad request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -139,13 +124,8 @@ public class DatabaseGameDAO implements GameDAO {
                 throw new InvalidRequestException("Error: game not found");
             }
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("42")) {
-                throw new InvalidRequestException("Error: bad request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
 
     }
@@ -159,11 +139,8 @@ public class DatabaseGameDAO implements GameDAO {
         try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 

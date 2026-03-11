@@ -1,5 +1,7 @@
 package dataaccess;
 
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
 import model.GameData;
 
 import java.util.Collection;
@@ -31,7 +33,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void putGame(GameData game) throws DataAccessException{
+    public void putGame(GameData game) throws DataAccessException {
         boolean nameInUse = allGameData.values().stream()
                 .anyMatch((gd) -> gd.gameName().equals(game.gameName()));
         if(nameInUse) throw new InvalidRequestException("Username is already in use");

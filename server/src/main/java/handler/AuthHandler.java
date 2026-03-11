@@ -1,7 +1,7 @@
 package handler;
 
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseConnectivityException;
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.DatabaseConnectivityException;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import model.AuthData;

@@ -2,10 +2,10 @@ package service;
 
 import chess.ChessGame;
 import chess.Constants;
-import dataaccess.DataAccessException;
+import dataaccess.exception.DataAccessException;
 import dataaccess.GameDAO;
-import dataaccess.InvalidRequestException;
-import dataaccess.UnavailableRequestException;
+import dataaccess.exception.InvalidRequestException;
+import dataaccess.exception.UnavailableRequestException;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestresult.*;

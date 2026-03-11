@@ -1,6 +1,9 @@
 package service;
 
 import dataaccess.*;
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
+import dataaccess.exception.UnavailableRequestException;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
@@ -33,10 +36,10 @@ public class UserService {
                         "Error: invalid password \n" + passwordRes.reason());
             }
         }
-        String password_hash = BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt());
+        String passwordHash = BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt());
         try {
             UserData userData = new UserData(registerRequest.username(),
-                    password_hash, registerRequest.email());
+                    passwordHash, registerRequest.email());
             userDAO.addUser(userData);
         } catch (InvalidRequestException e) {
             return new RegisterResult(UNAUTHORIZED, e.getMessage());

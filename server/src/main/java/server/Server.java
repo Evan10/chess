@@ -1,6 +1,7 @@
 package server;
 
 import dataaccess.*;
+import dataaccess.exception.DatabaseConnectivityException;
 import handler.AuthHandler;
 import handler.ChessGameHandler;
 import handler.ClearApplicationHandler;
@@ -21,7 +22,7 @@ import java.util.logging.Logger;
 public class Server {
 
     private final Javalin javalin;
-    private final static Logger logger = MyLogger.getLogger();
+    private final static Logger LOGGER = MyLogger.getLogger();
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -47,7 +48,7 @@ public class Server {
         AuthHandler authHandler = new AuthHandler(authService);
 
         // Register your endpoints and exception handlers here.
-        javalin.before(context -> logger.info(context.body()))
+        javalin.before(context -> LOGGER.info(context.body()))
                 .before(authHandler)
                 .delete("/db", clearApplicationHandler::handleClearApplication)
                 .post("/user", userHandler::registerHandler)
@@ -56,7 +57,7 @@ public class Server {
                 .get("/game", chessGameHandler::listGamesHandler)
                 .post("/game", chessGameHandler::createGameHandler)
                 .put("/game", chessGameHandler::joinGameHandler)
-                .after(context -> logger.info(context.status() + " " + context.result()))
+                .after(context -> LOGGER.info(context.status() + " " + context.result()))
                 .exception(DatabaseConnectivityException.class, ((e, context) ->
                         context.status(Constants.SERVER_ERROR)
                                 .result("{ \"message\": \"Error: Internal database error "+e.getMessage()+"\"}")

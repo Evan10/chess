@@ -1,4 +1,4 @@
-package dataaccess;
+package dataaccess.exception;
 
 /**
  * Indicates there was an error connecting to the database
@@ -9,9 +9,6 @@ public class DataAccessException extends Exception {
         super(message);
     }
 
-    public DataAccessException(String message, int reason) {
-        super(message);
-    }
 
     public DataAccessException(String message, Throwable ex) {
         super(message, ex);

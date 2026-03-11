@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class readProperties {
+public class ReadProperties {
 
 
     public static Properties readPropertiesFile(String path) throws IOException {

@@ -1,4 +1,4 @@
-package dataaccess;
+package dataaccess.exception;
 
 public class DatabaseConnectivityException extends DataAccessException {
     public DatabaseConnectivityException(String message) {

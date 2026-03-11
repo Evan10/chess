@@ -1,5 +1,8 @@
 package dataaccess;
 
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
+import dataaccess.exception.UnavailableRequestException;
 import model.UserData;
 
 import java.util.HashMap;

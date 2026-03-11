@@ -4,6 +4,9 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
+import dataaccess.exception.UnavailableRequestException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -21,9 +24,9 @@ import static util.Util.newUUID;
 
 public class DataAccessTests {
 
-    private final static UserData existingUser =
+    private final static UserData EXISTING_USER =
             new UserData("Bobby", "qwerty123", "email@email.com");
-    private final static UserData nonexistingUser =
+    private final static UserData NONEXISTING_USER =
             new UserData("NotBobby", "notQwerty123", "NotEmail@email.com");
     private static AuthDAO authDAO;
     private static GameDAO gameDAO;
@@ -43,7 +46,7 @@ public class DataAccessTests {
             gameDAO.clear();
             userDAO.clear();
 
-            userDAO.addUser(existingUser);
+            userDAO.addUser(EXISTING_USER);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -210,7 +213,7 @@ public class DataAccessTests {
         String authToken = newUUID();
         Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         try {
-            authDAO.addAuthData(new AuthData(authToken, existingUser.username()));
+            authDAO.addAuthData(new AuthData(authToken, EXISTING_USER.username()));
             Assertions.assertFalse(authDAO.isEmpty(),
                     "AuthData was added but that change is not reflected in database");
             Assertions.assertNotNull(authDAO.getAuthDataWithAuthToken(authToken),
@@ -228,7 +231,7 @@ public class DataAccessTests {
         String authToken = newUUID();
         Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                () -> authDAO.addAuthData(new AuthData(authToken, nonexistingUser.username())));
+                () -> authDAO.addAuthData(new AuthData(authToken, NONEXISTING_USER.username())));
     }
 
     @Test
@@ -238,7 +241,7 @@ public class DataAccessTests {
         String authToken = newUUID();
         Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         try {
-            authDAO.addAuthData(new AuthData(authToken, existingUser.username()));
+            authDAO.addAuthData(new AuthData(authToken, EXISTING_USER.username()));
             Assertions.assertFalse(authDAO.isEmpty(),
                     "AuthData was added but that change is not reflected in database");
             authDAO.removeAuthData(authToken);
@@ -263,8 +266,8 @@ public class DataAccessTests {
     @Order(14)
     @DisplayName("Username in use check")
     void usernameInUseTest() {
-        Assertions.assertTrue(userDAO.usernameInUse(existingUser.username()));
-        Assertions.assertFalse(userDAO.usernameInUse(nonexistingUser.username()));
+        Assertions.assertTrue(userDAO.usernameInUse(EXISTING_USER.username()));
+        Assertions.assertFalse(userDAO.usernameInUse(NONEXISTING_USER.username()));
     }
 
     @Test
@@ -280,12 +283,12 @@ public class DataAccessTests {
     @DisplayName("Add User test")
     void addUserTest() {
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                () -> userDAO.getUser(nonexistingUser.username()),
+                () -> userDAO.getUser(NONEXISTING_USER.username()),
                 "Error should be thrown when trying to get a nonexisting user");
         try {
-            userDAO.addUser(nonexistingUser);
-            UserData userData = userDAO.getUser(nonexistingUser.username());
-            Assertions.assertEquals(nonexistingUser, userData, "Incorrect user data was returned from username");
+            userDAO.addUser(NONEXISTING_USER);
+            UserData userData = userDAO.getUser(NONEXISTING_USER.username());
+            Assertions.assertEquals(NONEXISTING_USER, userData, "Incorrect user data was returned from username");
         } catch (DataAccessException e) {
             Assertions.fail(e);
         }
@@ -296,7 +299,7 @@ public class DataAccessTests {
     @DisplayName("Add user username in use")
     void addUserDuplicateUsernameTest() {
         Assertions.assertThrowsExactly(UnavailableRequestException.class,
-                () -> userDAO.addUser(existingUser),
+                () -> userDAO.addUser(EXISTING_USER),
                 "Error should throw when adding a user when the name is already in use");
     }
 
@@ -305,7 +308,7 @@ public class DataAccessTests {
     @DisplayName("Get user test")
     void getUserTest() {
         try {
-            userDAO.getUser(existingUser.username());
+            userDAO.getUser(EXISTING_USER.username());
         } catch (DataAccessException e) {
             Assertions.fail(e);
         }
@@ -316,7 +319,7 @@ public class DataAccessTests {
     @DisplayName("get nonexistent user test")
     void getNonexistentUserTest() {
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                () -> userDAO.getUser(nonexistingUser.username()),
+                () -> userDAO.getUser(NONEXISTING_USER.username()),
                 "Error should be thrown when trying to get a nonexisting user");
     }
 

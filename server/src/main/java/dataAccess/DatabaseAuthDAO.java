@@ -1,5 +1,7 @@
 package dataaccess;
 
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
 import model.AuthData;
 import util.MyLogger;
 
@@ -10,10 +12,11 @@ import java.sql.Statement;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
+import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
 
 public class DatabaseAuthDAO implements AuthDAO {
 
-    private final static Logger logger = MyLogger.getLogger();
+    private final static Logger LOGGER = MyLogger.getLogger();
 
     protected DatabaseAuthDAO() {
     }
@@ -37,13 +40,8 @@ public class DatabaseAuthDAO implements AuthDAO {
                         rs.getString("username"));
             }
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("23")) {
-                throw new InvalidRequestException("Error: Invalid request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -59,13 +57,8 @@ public class DatabaseAuthDAO implements AuthDAO {
             ps.setString(2, userData.username());
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("23")) {
-                throw new InvalidRequestException("Error: Invalid request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -82,13 +75,8 @@ public class DatabaseAuthDAO implements AuthDAO {
                 throw new InvalidRequestException("Error: invalid request");
             }
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            } else if (e.getSQLState().startsWith("23")) {
-                throw new InvalidRequestException("Error: Invalid request");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -100,11 +88,8 @@ public class DatabaseAuthDAO implements AuthDAO {
         try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 

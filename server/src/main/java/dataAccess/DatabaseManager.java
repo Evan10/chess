@@ -1,5 +1,8 @@
 package dataaccess;
 
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.DatabaseConnectivityException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

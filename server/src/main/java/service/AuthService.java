@@ -1,8 +1,8 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseConnectivityException;
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.DatabaseConnectivityException;
 import model.AuthData;
 
 

@@ -1,6 +1,8 @@
 package dataaccess;
 
 
+import dataaccess.exception.DataAccessException;
+import dataaccess.exception.InvalidRequestException;
 import model.UserData;
 import util.MyLogger;
 
@@ -11,10 +13,11 @@ import java.sql.Statement;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
+import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
 
 public class DatabaseUserDAO implements UserDAO {
 
-    private final Logger logger = MyLogger.getLogger();
+    private final static Logger LOGGER = MyLogger.getLogger();
 
     protected DatabaseUserDAO() {
     }
@@ -47,12 +50,7 @@ public class DatabaseUserDAO implements UserDAO {
             ps.setString(3, userData.email());
             ps.executeUpdate();
         } catch (SQLException e) {
-            if (e.getSQLState().startsWith("23")) { // SQLState
-                throw new UnavailableRequestException("Error: username already in use");
-            } else if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            }
-            throw new DataAccessException(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -74,10 +72,7 @@ public class DatabaseUserDAO implements UserDAO {
                     rs.getString("password_hash"),
                     rs.getString("email"));
         } catch (SQLException e) {
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            }
-            throw new DataAccessException(e.toString());
+            throw SQLStateToError(e);
         }
     }
 
@@ -89,11 +84,8 @@ public class DatabaseUserDAO implements UserDAO {
         try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
-            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DatabaseConnectivityException("Error: Internal Database error");
-            }
-            throw new DataAccessException(e.toString());
+            LOGGER.warning(e.toString());
+            throw SQLStateToError(e);
         }
     }
 

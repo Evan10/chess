@@ -1,4 +1,4 @@
-package dataaccess;
+package dataaccess.exception;
 
 public class UnavailableRequestException extends DataAccessException {
     public UnavailableRequestException(String message) {

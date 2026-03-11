@@ -1,6 +1,6 @@
 package dataaccess;
 
-import util.readProperties;
+import util.ReadProperties;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -22,7 +22,7 @@ public class DAOFactory {
 
     private static void loadProps() {
         try {
-            props = readProperties.readPropertiesFile("server.properties");
+            props = ReadProperties.readPropertiesFile("server.properties");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
