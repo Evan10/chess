@@ -7,6 +7,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import requestresult.*;
 import util.Constants;
 import util.Util;
+
 import static util.Constants.*;
 
 public class UserService {
@@ -37,9 +38,9 @@ public class UserService {
             UserData userData = new UserData(registerRequest.username(),
                     password_hash, registerRequest.email());
             userDAO.addUser(userData);
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new RegisterResult(UNAUTHORIZED, e.getMessage());
-        } catch (UnavailableRequestException e){
+        } catch (UnavailableRequestException e) {
             return new RegisterResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
             return new RegisterResult(SERVER_ERROR, e.getMessage());
@@ -49,9 +50,9 @@ public class UserService {
         AuthData authData = new AuthData(authToken, registerRequest.username());
         try {
             authDAO.addAuthData(authData);
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new RegisterResult(UNAUTHORIZED, e.getMessage());
-        } catch (UnavailableRequestException e){
+        } catch (UnavailableRequestException e) {
             return new RegisterResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
             return new RegisterResult(SERVER_ERROR, e.getMessage());
@@ -63,11 +64,11 @@ public class UserService {
     public LoginResult login(LoginRequest loginRequest) {
         try {
             UserData userData = userDAO.getUser(loginRequest.username());
-            boolean correctPassword = BCrypt.checkpw(loginRequest.password(),userData.password());
+            boolean correctPassword = BCrypt.checkpw(loginRequest.password(), userData.password());
             if (!correctPassword) {
                 return new LoginResult(Constants.UNAUTHORIZED, "Error: unauthorized");
             }
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new LoginResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
             return new LoginResult(SERVER_ERROR, e.getMessage());
@@ -77,7 +78,7 @@ public class UserService {
         AuthData authData = new AuthData(authToken, loginRequest.username());
         try {
             authDAO.addAuthData(authData);
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new LoginResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
             return new LoginResult(SERVER_ERROR, e.getMessage());
@@ -90,7 +91,7 @@ public class UserService {
     public LogoutResult logout(LogoutRequest logoutRequest) {
         try {
             authDAO.removeAuthData(logoutRequest.authData().authToken());
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new LogoutResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
             return new LogoutResult(SERVER_ERROR, e.getMessage());

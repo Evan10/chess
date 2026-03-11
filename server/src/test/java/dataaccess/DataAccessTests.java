@@ -1,10 +1,9 @@
-package database;
+package dataaccess;
 
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
-import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -23,15 +22,15 @@ import static util.Util.newUUID;
 public class DataAccessTests {
 
     private final static UserData existingUser =
-            new UserData("Bobby", "qwerty123","email@email.com");
+            new UserData("Bobby", "qwerty123", "email@email.com");
     private final static UserData nonexistingUser =
-            new UserData("NotBobby", "notQwerty123","NotEmail@email.com");
+            new UserData("NotBobby", "notQwerty123", "NotEmail@email.com");
     private static AuthDAO authDAO;
     private static GameDAO gameDAO;
     private static UserDAO userDAO;
 
     @BeforeAll
-    static void setup(){
+    static void setup() {
         authDAO = DAOFactory.getAuthDAO();
         gameDAO = DAOFactory.getGameDAO();
         userDAO = DAOFactory.getUserDAO();
@@ -53,7 +52,7 @@ public class DataAccessTests {
     @Test
     @Order(0)
     @DisplayName("Clear database test")
-    void clearDatabaseTest(){
+    void clearDatabaseTest() {
         addDataToDAOs();
 
         Assertions.assertFalse(allDAOsAreEmpty());
@@ -61,7 +60,7 @@ public class DataAccessTests {
             authDAO.clear();
             gameDAO.clear();
             userDAO.clear();
-        } catch(DataAccessException e){
+        } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
         Assertions.assertTrue(allDAOsAreEmpty());
@@ -71,7 +70,7 @@ public class DataAccessTests {
     @Test
     @Order(1)
     @DisplayName("Get game list")
-    void gameListTest(){
+    void gameListTest() {
         Collection<GameData> games = addToGameDAO();
         HashSet<GameData> gamesSet = new HashSet<>(games);
         try {
@@ -87,7 +86,7 @@ public class DataAccessTests {
     @Test
     @Order(2)
     @DisplayName("Get game empty")
-    void gameListEmptyTest(){
+    void gameListEmptyTest() {
         try {
             Collection<GameData> gamesFromDAO = gameDAO.getGameList();
             Assertions.assertTrue(gamesFromDAO.isEmpty());
@@ -100,10 +99,10 @@ public class DataAccessTests {
     @Test
     @Order(3)
     @DisplayName("Get game")
-    void getGameWithIDTest(){
+    void getGameWithIDTest() {
         Collection<GameData> games = addToGameDAO();
         try {
-            for(GameData gd : games) {
+            for (GameData gd : games) {
                 GameData gamesFromDAO = gameDAO.getGame(gd.gameID());
                 Assertions.assertEquals(gd, gamesFromDAO);
             }
@@ -115,41 +114,42 @@ public class DataAccessTests {
     @Test
     @Order(4)
     @DisplayName("Get game nonexistent")
-    void getGameNotFoundTest(){
+    void getGameNotFoundTest() {
         addToGameDAO();
-        Assertions.assertThrows(DataAccessException.class, ()->gameDAO.getGame("FakeGameID"));
+        Assertions.assertThrows(DataAccessException.class, () -> gameDAO.getGame("FakeGameID"));
     }
 
     @Test
     @Order(5)
     @DisplayName("Create game success")
-    void createGameTest(){
+    void createGameTest() {
         GameData gameData = new GameData(Integer.toString(newIntID()),
-                null,null,
-                "game",new ChessGame());
+                null, null,
+                "game", new ChessGame());
         try {
             gameDAO.putGame(gameData);
             GameData game = gameDAO.getGame(gameData.gameID());
-            Assertions.assertEquals(game,gameData);
+            Assertions.assertEquals(game, gameData);
         } catch (DataAccessException e) {
             Assertions.fail(e);
         }
     }
+
     @Test
     @Order(6)
     @DisplayName("Update game")
-    void updateGameSuccessTest(){
+    void updateGameSuccessTest() {
         List<String> usernames = addDataToDAOs().stream().toList();
         GameData gameData = new GameData(Integer.toString(newIntID()),
-                null,null,
-                "game",new ChessGame());
+                null, null,
+                "game", new ChessGame());
         try {
             gameDAO.putGame(gameData);
             ChessGame chessGame = new ChessGame();
             messWithChessBoard(chessGame);
 
-            gameData = new GameData(gameData.gameID(),usernames.getFirst(), usernames.getLast()
-                    ,"change name",chessGame);
+            gameData = new GameData(gameData.gameID(), usernames.getFirst(), usernames.getLast()
+                    , "change name", chessGame);
 
             gameDAO.updateGame(gameData);
 
@@ -162,29 +162,29 @@ public class DataAccessTests {
     @Test
     @Order(7)
     @DisplayName("Update nonexistent game")
-    void updateGameNotFoundTest(){
+    void updateGameNotFoundTest() {
         List<String> usernames = addDataToDAOs().stream().toList();
         ChessGame chessGame = new ChessGame();
         messWithChessBoard(chessGame);
-        GameData gameData = new GameData(Integer.toString(newIntID()),usernames.getFirst(), usernames.getLast()
-                ,"FakeGameData",chessGame);
-        Assertions.assertThrowsExactly(InvalidRequestException.class,()->gameDAO.updateGame(gameData));
+        GameData gameData = new GameData(Integer.toString(newIntID()), usernames.getFirst(), usernames.getLast()
+                , "FakeGameData", chessGame);
+        Assertions.assertThrowsExactly(InvalidRequestException.class, () -> gameDAO.updateGame(gameData));
     }
 
     @Test
     @Order(8)
     @DisplayName("Get Auth data")
-    void getAuthData(){
-        List<String> usernames = IntStream.range(0,10)
-                .mapToObj(i -> "Username"+i).toList();
-        List<String> authTokens = IntStream.range(0,10)
-                .mapToObj(_->newUUID()).toList();
+    void getAuthData() {
+        List<String> usernames = IntStream.range(0, 10)
+                .mapToObj(i -> "Username" + i).toList();
+        List<String> authTokens = IntStream.range(0, 10)
+                .mapToObj(_ -> newUUID()).toList();
         try {
-            for(int i = 0; i < 10 ; i++) {
-                userDAO.addUser(new UserData(usernames.get(i),"password","email@email.com"));
+            for (int i = 0; i < 10; i++) {
+                userDAO.addUser(new UserData(usernames.get(i), "password", "email@email.com"));
                 authDAO.addAuthData(new AuthData(authTokens.get(i), usernames.get(i)));
             }
-            for(String authToken: authTokens){
+            for (String authToken : authTokens) {
                 AuthData authData = authDAO.getAuthDataWithAuthToken(authToken);
                 Assertions.assertTrue(usernames.contains(authData.username()));
             }
@@ -196,26 +196,26 @@ public class DataAccessTests {
     @Test
     @Order(9)
     @DisplayName("get nonexistent authData")
-    void getNonexistentAuthData(){
+    void getNonexistentAuthData() {
         String fakeID = newUUID();
         addDataToDAOs();
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                ()->authDAO.getAuthDataWithAuthToken(fakeID));
+                () -> authDAO.getAuthDataWithAuthToken(fakeID));
     }
 
     @Test
     @Order(10)
     @DisplayName("Add AuthData")
-    void addAuthDataTest(){
+    void addAuthDataTest() {
         String authToken = newUUID();
-        Assertions.assertTrue(authDAO.isEmpty(),"No authData should exist at this point");
+        Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         try {
             authDAO.addAuthData(new AuthData(authToken, existingUser.username()));
             Assertions.assertFalse(authDAO.isEmpty(),
                     "AuthData was added but that change is not reflected in database");
             Assertions.assertNotNull(authDAO.getAuthDataWithAuthToken(authToken),
                     "AuthDAO returned null when it should have returned a value");
-        }catch (DataAccessException e){
+        } catch (DataAccessException e) {
             Assertions.fail(e);
         }
 
@@ -224,26 +224,26 @@ public class DataAccessTests {
     @Test
     @Order(11)
     @DisplayName("Add Invalid AuthData")
-    void addInvalidAuthDataTest(){
+    void addInvalidAuthDataTest() {
         String authToken = newUUID();
-        Assertions.assertTrue(authDAO.isEmpty(),"No authData should exist at this point");
+        Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                ()->authDAO.addAuthData(new AuthData(authToken, nonexistingUser.username())));
+                () -> authDAO.addAuthData(new AuthData(authToken, nonexistingUser.username())));
     }
 
     @Test
     @Order(12)
     @DisplayName("remove AuthData")
-    void removeAuthDataTest(){
+    void removeAuthDataTest() {
         String authToken = newUUID();
-        Assertions.assertTrue(authDAO.isEmpty(),"No authData should exist at this point");
+        Assertions.assertTrue(authDAO.isEmpty(), "No authData should exist at this point");
         try {
             authDAO.addAuthData(new AuthData(authToken, existingUser.username()));
             Assertions.assertFalse(authDAO.isEmpty(),
                     "AuthData was added but that change is not reflected in database");
             authDAO.removeAuthData(authToken);
             Assertions.assertTrue(authDAO.isEmpty());
-        }catch (DataAccessException e){
+        } catch (DataAccessException e) {
             Assertions.fail(e);
         }
 
@@ -252,24 +252,25 @@ public class DataAccessTests {
     @Test
     @Order(13)
     @DisplayName("remove nonexistent authData")
-    void removeInvalidAuthDataTest(){
+    void removeInvalidAuthDataTest() {
         addDataToDAOs();
         String fakeAuth = newUUID();
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                ()->authDAO.removeAuthData(fakeAuth));
+                () -> authDAO.removeAuthData(fakeAuth));
     }
 
     @Test
     @Order(14)
     @DisplayName("Username in use check")
-    void usernameInUseTest(){
+    void usernameInUseTest() {
         Assertions.assertTrue(userDAO.usernameInUse(existingUser.username()));
         Assertions.assertFalse(userDAO.usernameInUse(nonexistingUser.username()));
     }
+
     @Test
     @Order(15)
     @DisplayName("Check username using null")
-    void invalidUsernameTest(){
+    void invalidUsernameTest() {
         Assertions.assertFalse(userDAO.usernameInUse(null));
         Assertions.assertFalse(userDAO.usernameInUse(""));
     }
@@ -277,14 +278,14 @@ public class DataAccessTests {
     @Test
     @Order(16)
     @DisplayName("Add User test")
-    void addUserTest(){
+    void addUserTest() {
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                ()->userDAO.getUser(nonexistingUser.username()),
+                () -> userDAO.getUser(nonexistingUser.username()),
                 "Error should be thrown when trying to get a nonexisting user");
         try {
             userDAO.addUser(nonexistingUser);
             UserData userData = userDAO.getUser(nonexistingUser.username());
-            Assertions.assertEquals(nonexistingUser,userData, "Incorrect user data was returned from username");
+            Assertions.assertEquals(nonexistingUser, userData, "Incorrect user data was returned from username");
         } catch (DataAccessException e) {
             Assertions.fail(e);
         }
@@ -293,16 +294,16 @@ public class DataAccessTests {
     @Test
     @Order(17)
     @DisplayName("Add user username in use")
-    void addUserDuplicateUsernameTest(){
+    void addUserDuplicateUsernameTest() {
         Assertions.assertThrowsExactly(UnavailableRequestException.class,
-                ()->userDAO.addUser(existingUser),
+                () -> userDAO.addUser(existingUser),
                 "Error should throw when adding a user when the name is already in use");
     }
 
     @Test
     @Order(18)
     @DisplayName("Get user test")
-    void getUserTest(){
+    void getUserTest() {
         try {
             userDAO.getUser(existingUser.username());
         } catch (DataAccessException e) {
@@ -313,40 +314,37 @@ public class DataAccessTests {
     @Test
     @Order(19)
     @DisplayName("get nonexistent user test")
-    void getNonexistentUserTest(){
+    void getNonexistentUserTest() {
         Assertions.assertThrowsExactly(InvalidRequestException.class,
-                ()->userDAO.getUser(nonexistingUser.username()),
+                () -> userDAO.getUser(nonexistingUser.username()),
                 "Error should be thrown when trying to get a nonexisting user");
     }
 
 
 
     /*
-    *   X Collection<GameData> getGameList() throws DataAccessException;
-    *   X GameData getGame(String gameID) throws DataAccessException;
-    *   X void putGame(GameData game) throws DataAccessException;
-    *   X void updateGame(GameData game) throws DataAccessException;
-    *
-    *   X AuthData getAuthDataWithAuthToken(String authToken) throws DataAccessException;
-    *   X void addAuthData(AuthData userData) throws DataAccessException;
-    *   X void removeAuthData(String authToken) throws DataAccessException;
-    *
-    *   boolean usernameInUse(String username);
-    *   void addUser(UserData userData) throws DataAccessException;
-    *   UserData getUser(String username) throws DataAccessException;
-    * */
+     *   X Collection<GameData> getGameList() throws DataAccessException;
+     *   X GameData getGame(String gameID) throws DataAccessException;
+     *   X void putGame(GameData game) throws DataAccessException;
+     *   X void updateGame(GameData game) throws DataAccessException;
+     *
+     *   X AuthData getAuthDataWithAuthToken(String authToken) throws DataAccessException;
+     *   X void addAuthData(AuthData userData) throws DataAccessException;
+     *   X void removeAuthData(String authToken) throws DataAccessException;
+     *
+     *   boolean usernameInUse(String username);
+     *   void addUser(UserData userData) throws DataAccessException;
+     *   UserData getUser(String username) throws DataAccessException;
+     * */
 
 
-
-
-
-    public static boolean allDAOsAreEmpty(){
+    public static boolean allDAOsAreEmpty() {
         return authDAO.isEmpty() && gameDAO.isEmpty() && userDAO.isEmpty();
     }
 
-    public static Collection<String> addDataToDAOs(){
-        Collection<String> usernames = IntStream.range(0,10)
-                .mapToObj(i -> "Username"+i)
+    public static Collection<String> addDataToDAOs() {
+        Collection<String> usernames = IntStream.range(0, 10)
+                .mapToObj(i -> "Username" + i)
                 .toList();
         addToUserDAO(usernames);// must be first to avoid errors
         addToAuthDAO(usernames);
@@ -354,22 +352,23 @@ public class DataAccessTests {
         return usernames;
     }
 
-    public static void addToAuthDAO(Collection<String> usernames){
-        for(String username:usernames){
+    public static void addToAuthDAO(Collection<String> usernames) {
+        for (String username : usernames) {
             try {
-                authDAO.addAuthData(new AuthData(Util.newUUID(),username));
+                authDAO.addAuthData(new AuthData(Util.newUUID(), username));
             } catch (DataAccessException e) {
                 throw new RuntimeException(e);
             }
         }
     }
-    public static Collection<GameData> addToGameDAO(){
+
+    public static Collection<GameData> addToGameDAO() {
         ArrayList<GameData> games = new ArrayList<>();
-        for(int i = 0;i < 10; i ++){
+        for (int i = 0; i < 10; i++) {
             try {
                 GameData gd = new GameData(Integer.toString(newIntID()),
-                        null,null,
-                        "game"+i,new ChessGame());
+                        null, null,
+                        "game" + i, new ChessGame());
                 games.add(gd);
                 gameDAO.putGame(gd);
             } catch (DataAccessException e) {
@@ -378,24 +377,25 @@ public class DataAccessTests {
         }
         return games;
     }
-    public static void addToUserDAO(Collection<String> usernames){
-        for(String username: usernames){
-            try{
+
+    public static void addToUserDAO(Collection<String> usernames) {
+        for (String username : usernames) {
+            try {
                 userDAO.addUser(new UserData(username,
-                        "password"+username,
-                        "email"+username+"@gmail.com"));
+                        "password" + username,
+                        "email" + username + "@gmail.com"));
             } catch (DataAccessException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public static void messWithChessBoard(ChessGame game){
+    public static void messWithChessBoard(ChessGame game) {
         game.toggleTeamTurn();
         try {
             game.getBoard().movePiece(new ChessMove(
-                    new ChessPosition(2,4)
-                    ,new ChessPosition(4,4),
+                    new ChessPosition(2, 4)
+                    , new ChessPosition(4, 4),
                     null));
         } catch (InvalidMoveException e) {
             throw new RuntimeException(e);

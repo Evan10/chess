@@ -2,13 +2,15 @@ package service;
 
 import chess.ChessGame;
 import chess.Constants;
-import dataaccess.*;
+import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
+import dataaccess.InvalidRequestException;
+import dataaccess.UnavailableRequestException;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestresult.*;
 import util.Util;
 
-import static dataaccess.DataAccessException.*;
 import static util.Constants.*;
 
 public class GameService {
@@ -40,9 +42,9 @@ public class GameService {
         GameData gameData = new GameData(gameID, null, null, req.gameName(), game);
         try {
             gameDAO.putGame(gameData);
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new CreateGameResult(UNAUTHORIZED, e.getMessage());
-        } catch (UnavailableRequestException e){
+        } catch (UnavailableRequestException e) {
             return new CreateGameResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
             return new CreateGameResult(SERVER_ERROR, e.getMessage());
@@ -73,9 +75,9 @@ public class GameService {
                         g.blackUsername(), g.gameName(), g.game());
             }
             gameDAO.updateGame(newData);
-        } catch (InvalidRequestException e){
+        } catch (InvalidRequestException e) {
             return new JoinGameResult(UNAUTHORIZED, e.getMessage());
-        } catch (UnavailableRequestException e){
+        } catch (UnavailableRequestException e) {
             return new JoinGameResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
             return new JoinGameResult(SERVER_ERROR, e.getMessage());

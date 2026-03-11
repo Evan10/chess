@@ -18,19 +18,18 @@ public class AuthHandler implements Handler {
     }
 
     @Override
-    public void handle(@NotNull Context context) throws DataAccessException{
+    public void handle(@NotNull Context context) throws DataAccessException {
         String authToken = context.header(Constants.AUTH_TOKEN);
-        try{
+        try {
             AuthData authData = authService.getAuth(authToken);
-            if(authData.isValid()) {
+            if (authData.isValid()) {
                 context.attribute(Constants.AUTHENTICATED, authData);
-            } else{
+            } else {
                 context.attribute(Constants.AUTHENTICATED, null);
             }
-        }catch (DatabaseConnectivityException e){
+        } catch (DatabaseConnectivityException e) {
             throw e;
-        }
-        catch (DataAccessException e){
+        } catch (DataAccessException e) {
             context.attribute(Constants.AUTHENTICATED, null);
         }
     }

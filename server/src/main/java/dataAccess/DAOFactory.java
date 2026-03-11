@@ -8,15 +8,19 @@ import java.util.Properties;
 public class DAOFactory {
 
     private static Properties props;
-    static{
+
+    static {
         loadProps();
     }
-    private static boolean useDatabase(){
-        if(props.isEmpty()) return false;
+
+    private static boolean useDatabase() {
+        if (props.isEmpty()) {
+            return false;
+        }
         return Boolean.parseBoolean(props.getProperty("useDatabase"));
     }
 
-    private static void loadProps(){
+    private static void loadProps() {
         try {
             props = readProperties.readPropertiesFile("server.properties");
         } catch (IOException e) {
@@ -24,15 +28,15 @@ public class DAOFactory {
         }
     }
 
-    public static UserDAO getUserDAO(){
+    public static UserDAO getUserDAO() {
         return useDatabase() ? new DatabaseUserDAO() : new MemoryUserDAO();
     }
 
-    public static GameDAO getGameDAO(){
+    public static GameDAO getGameDAO() {
         return useDatabase() ? new DatabaseGameDAO() : new MemoryGameDAO();
     }
 
-    public static AuthDAO getAuthDAO(){
+    public static AuthDAO getAuthDAO() {
         return useDatabase() ? new DatabaseAuthDAO() : new MemoryAuthDAO();
     }
 

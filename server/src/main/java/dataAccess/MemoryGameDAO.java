@@ -31,15 +31,15 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void putGame(GameData game) {
+    public void putGame(GameData game) throws DataAccessException{
         boolean nameInUse = allGameData.values().stream()
-                .anyMatch((gd)->gd.gameName().equals(game.gameName()));
-
+                .anyMatch((gd) -> gd.gameName().equals(game.gameName()));
+        if(nameInUse) throw new InvalidRequestException("Username is already in use");
         allGameData.put(game.gameID(), game);
     }
 
     @Override
-    public void updateGame(GameData game) {
+    public void updateGame(GameData game) throws DataAccessException {
         putGame(game);
     }
 

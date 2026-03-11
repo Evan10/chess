@@ -4,7 +4,10 @@ package dataaccess;
 import model.UserData;
 import util.MyLogger;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
@@ -22,7 +25,7 @@ public class DatabaseUserDAO implements UserDAO {
         String statement = """
                 SELECT EXISTS(SELECT username FROM users WHERE username = ?)
                 """;
-        try(PreparedStatement ps = getConnection().prepareStatement(statement)){
+        try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.setString(1, username);
             ResultSet set = ps.executeQuery();
             set.next();
@@ -38,13 +41,13 @@ public class DatabaseUserDAO implements UserDAO {
                 INSERT INTO users (username, password_hash, email)
                 VALUES (?,?,?);
                 """;
-        try(PreparedStatement ps = getConnection().prepareStatement(statement)){
+        try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.setString(1, userData.username());
             ps.setString(2, userData.password());
             ps.setString(3, userData.email());
             ps.executeUpdate();
         } catch (SQLException e) {
-            if(e.getSQLState().startsWith("23")){ // SQLState
+            if (e.getSQLState().startsWith("23")) { // SQLState
                 throw new UnavailableRequestException("Error: username already in use");
             } else if (e.getSQLState().startsWith("08")) { // connectivity error
                 throw new DatabaseConnectivityException("Error: Internal Database error");
@@ -60,17 +63,17 @@ public class DatabaseUserDAO implements UserDAO {
                 FROM users
                 WHERE username = ?
                 """;
-        try(PreparedStatement ps = getConnection().prepareStatement(statement)){
-            ps.setString(1,username);
+        try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
+            ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
-            if(!rs.next()){
+            if (!rs.next()) {
                 throw new InvalidRequestException("Error: user with given username not found");
             }
             return new UserData(
                     rs.getString("username"),
                     rs.getString("password_hash"),
                     rs.getString("email"));
-        }catch (SQLException e){
+        } catch (SQLException e) {
             if (e.getSQLState().startsWith("08")) { // connectivity error
                 throw new DatabaseConnectivityException("Error: Internal Database error");
             }
@@ -81,9 +84,9 @@ public class DatabaseUserDAO implements UserDAO {
     @Override
     public void clear() throws DataAccessException {
         String statement = """
-            DELETE FROM users
-            """;
-        try(PreparedStatement ps = getConnection().prepareStatement(statement)) {
+                DELETE FROM users
+                """;
+        try (PreparedStatement ps = getConnection().prepareStatement(statement)) {
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.warning(e.toString());
@@ -96,9 +99,9 @@ public class DatabaseUserDAO implements UserDAO {
 
     @Override
     public boolean isEmpty() {
-        try(Statement s = getConnection().createStatement()){
+        try (Statement s = getConnection().createStatement()) {
             return !s.executeQuery("SELECT 1 FROM users LIMIT 1;").next();
-        }catch (SQLException | DataAccessException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
     }

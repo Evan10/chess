@@ -29,9 +29,9 @@ public class ServiceTests {
 
     @BeforeAll
     static void setup() {
-        UserDAO userDAO = DAOFactory.getUserDAO();;
-        GameDAO gameDAO = DAOFactory.getGameDAO();;
-        AuthDAO authDAO = DAOFactory.getAuthDAO();;
+        UserDAO userDAO = DAOFactory.getUserDAO();
+        GameDAO gameDAO = DAOFactory.getGameDAO();
+        AuthDAO authDAO = DAOFactory.getAuthDAO();
         Collection<DAO> allDAOs = List.of(userDAO, gameDAO, authDAO);
 
         authService = new AuthService(authDAO);
@@ -59,7 +59,7 @@ public class ServiceTests {
     public void authCorrectlySaved() {
         AuthData authData = getAuthDataOrNull(existingUserAuth);
 
-         Assertions.assertNotNull(authData);
+        Assertions.assertNotNull(authData);
         Assertions.assertTrue(authData.isValid(), "AuthToken was valid but was not accepted");
         Assertions.assertEquals(authData.username(), existingUser.username(),
                 "AuthData returned with incorrect username");
@@ -149,7 +149,7 @@ public class ServiceTests {
     @DisplayName("JoinGameSpotTaken")
     public void joinGameSpotTaken() {
 
-        AuthData authData = getAuthDataOrNull(existingUserAuth);;
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         CreateGameResult createRes = addGamesToList(authData, 1).stream().toList().getFirst();
 
         String gameID = createRes.gameID();
@@ -172,6 +172,7 @@ public class ServiceTests {
                 .filter((gd) -> gd.gameID().equals(gameID))
                 .toList().getFirst();
 
+        Assertions.assertNotNull(authData);
         Assertions.assertNotEquals(authData.username(), gameData.blackUsername(),
                 "User should not be black player, but they are");
 
@@ -181,7 +182,7 @@ public class ServiceTests {
     @Order(8)
     @DisplayName("CreateGameSuccess")
     public void createGameSuccess() {
-        AuthData authData = getAuthDataOrNull(existingUserAuth);;
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         Collection<CreateGameResult> createResults = addGamesToList(authData, 10);
         for (CreateGameResult res : createResults) {
             Assertions.assertEquals(Constants.OK, res.responseCode(),
@@ -196,7 +197,7 @@ public class ServiceTests {
     @Order(9)
     @DisplayName("createGameInvalidName")
     public void createGameInvalidName() {
-        AuthData authData = getAuthDataOrNull(existingUserAuth);;
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         CreateGameRequest createReq = new CreateGameRequest("", authData);
         CreateGameResult res = gameService.createGame(createReq);
         Assertions.assertEquals(Constants.BAD_REQUEST, res.responseCode(),
@@ -220,7 +221,7 @@ public class ServiceTests {
         Assertions.assertFalse(registerRes.authToken().isBlank(), "Result is missing an auth token");
         Assertions.assertFalse(registerRes.username().isBlank(), "Result is missing username");
 
-        AuthData authData = getAuthDataOrNull(registerRes.authToken());;
+        AuthData authData = getAuthDataOrNull(registerRes.authToken());
 
         Assertions.assertNotNull(authData, "Auth data was null but was expected to have a value");
         Assertions.assertEquals(authData.username(), registerReq.username(), "Username returned by auth service was incorrect");
@@ -288,7 +289,7 @@ public class ServiceTests {
         LogoutRequest logoutReq = new LogoutRequest(authData);
         LogoutResult logoutRes = userService.logout(logoutReq);
 
-        Assertions.assertNotNull(authData,"AuthData was null but was supposed to contain a value");
+        Assertions.assertNotNull(authData, "AuthData was null but was supposed to contain a value");
         Assertions.assertEquals(Constants.OK, logoutRes.responseCode(), "Logout should have been successful");
 
         AuthData loggedOutAuthData = getAuthDataOrNull(authData.authToken());
@@ -324,10 +325,10 @@ public class ServiceTests {
     }
 
 
-    private AuthData getAuthDataOrNull(String authToken){
+    private AuthData getAuthDataOrNull(String authToken) {
         try {
             return authService.getAuth(authToken);
-        }catch (DataAccessException e){
+        } catch (DataAccessException e) {
             return null;
         }
     }

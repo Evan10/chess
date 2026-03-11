@@ -9,10 +9,10 @@ public class MyLogger {
 
     private static Logger logger;
 
-    public static Logger getLogger(){
-        if(logger == null){
+    public static Logger getLogger() {
+        if (logger == null) {
             logger = Logger.getLogger("ChessLogger");
-            try{
+            try {
                 FileHandler handler = new FileHandler("log/Chess.log", true);
                 handler.setFormatter(new SimpleFormatter());
                 logger.addHandler(handler);

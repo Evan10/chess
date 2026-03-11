@@ -14,13 +14,13 @@ public class AuthService {
         this.authDAO = authDAO;
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException{
+    public AuthData getAuth(String authToken) throws DataAccessException {
         try {
             return authDAO.getAuthDataWithAuthToken(authToken);
         } catch (DatabaseConnectivityException e) {
             throw e;
-        } catch (DataAccessException e){
-            return new AuthData(null,null);
+        } catch (DataAccessException e) {
+            return new AuthData(null, null);
         }
     }
 

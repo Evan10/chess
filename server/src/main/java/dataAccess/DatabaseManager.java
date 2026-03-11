@@ -1,8 +1,8 @@
 package dataaccess;
 
-import chess.ChessGame;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 
@@ -25,7 +25,7 @@ public class DatabaseManager {
     }
 
 
-    static public void initializeDatabase() throws DataAccessException{
+    static public void initializeDatabase() throws DataAccessException {
         createDatabase();
         createTables();
 
@@ -44,7 +44,7 @@ public class DatabaseManager {
         }
     }
 
-    static public void createTables() throws DataAccessException{
+    static public void createTables() throws DataAccessException {
         Connection conn = getConnection();
 
         String users = """
@@ -54,10 +54,10 @@ public class DatabaseManager {
                 email varchar(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT
-                    CURRENT_TIMESTAMP 
+                    CURRENT_TIMESTAMP
                     ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (username));""";
-        String games ="""
+        String games = """
                 CREATE TABLE IF NOT EXISTS games(
                 gameID varchar(255) NOT NULL,
                 whiteUsername varchar(255),
