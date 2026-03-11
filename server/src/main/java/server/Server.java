@@ -13,13 +13,10 @@ import service.UserService;
 import util.Constants;
 import util.MyLogger;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
-import static util.readProperties.readPropertiesFile;
 
 public class Server {
 
@@ -59,7 +56,7 @@ public class Server {
                 .post("/game", chessGameHandler::createGameHandler)
                 .put("/game", chessGameHandler::joinGameHandler)
                 .after(context -> logger.info(context.status() + " " + context.result()))
-                .exception(DatabaseConnectivityException.class,((_, context) ->
+                .exception(DatabaseConnectivityException.class,((e, context) ->
                         context.status(Constants.SERVER_ERROR)
                                 .result("{ \"message\": \"Error: Internal database error\"}")
                 ));
