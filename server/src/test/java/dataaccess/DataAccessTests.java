@@ -178,7 +178,7 @@ public class DataAccessTests {
         List<String> usernames = IntStream.range(0, 10)
                 .mapToObj(i -> "Username" + i).toList();
         List<String> authTokens = IntStream.range(0, 10)
-                .mapToObj(_ -> newUUID()).toList();
+                .mapToObj(i -> newUUID()).toList();
         try {
             for (int i = 0; i < 10; i++) {
                 userDAO.addUser(new UserData(usernames.get(i), "password", "email@email.com"));
