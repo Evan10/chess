@@ -1,5 +1,7 @@
 package handler;
 
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseConnectivityException;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import model.AuthData;
@@ -16,13 +18,20 @@ public class AuthHandler implements Handler {
     }
 
     @Override
-    public void handle(@NotNull Context context) {
+    public void handle(@NotNull Context context) throws DataAccessException{
         String authToken = context.header(Constants.AUTH_TOKEN);
-        AuthData authData = authService.getAuth(authToken);
-        if (authData == null || authData.username().isBlank()) {
+        try{
+            AuthData authData = authService.getAuth(authToken);
+            if(authData.isValid()) {
+                context.attribute(Constants.AUTHENTICATED, authData);
+            } else{
+                context.attribute(Constants.AUTHENTICATED, null);
+            }
+        }catch (DatabaseConnectivityException e){
+            throw e;
+        }
+        catch (DataAccessException e){
             context.attribute(Constants.AUTHENTICATED, null);
-        } else {
-            context.attribute(Constants.AUTHENTICATED, authData);
         }
     }
 

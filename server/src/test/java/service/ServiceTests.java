@@ -57,8 +57,9 @@ public class ServiceTests {
     @Order(1)
     @DisplayName("AuthTokenStoredCorrect")
     public void authCorrectlySaved() {
-        AuthData authData = authService.getAuth(existingUserAuth);
-        Assertions.assertNotNull(authData);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
+
+         Assertions.assertNotNull(authData);
         Assertions.assertTrue(authData.isValid(), "AuthToken was valid but was not accepted");
         Assertions.assertEquals(authData.username(), existingUser.username(),
                 "AuthData returned with incorrect username");
@@ -69,15 +70,16 @@ public class ServiceTests {
     @DisplayName("AuthTokenNotFound")
     public void authTokenNotFound() {
         String fakeAuth = Util.newUUID();
-        AuthData authData = authService.getAuth(fakeAuth);
-        Assertions.assertNull(authData, "Invalid authToken was accepted but should have return null");
+        AuthData authData = getAuthDataOrNull(fakeAuth);
+        assertNullOrEmpty(authData);
+        //Assertions.assertNull(authData, "Invalid authToken was accepted but should have return null");
     }
 
     @Test
     @Order(3)
     @DisplayName("ClearAppWorksCorrectly")
     public void clearAppCorrectly() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         CreateGameRequest createGameReq = new CreateGameRequest("Game", authData);
         gameService.createGame(createGameReq);
         Assertions.assertFalse(clearApplicationService.areDAOsEmpty(), "Data Access Objects were " +
@@ -96,7 +98,7 @@ public class ServiceTests {
     @DisplayName("ListGamesAuth")
     public void listGamesWithAuth() {
         int gameCount = 10;
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         addGamesToList(authData, gameCount);
 
         ListGamesRequest req = new ListGamesRequest(authData);
@@ -111,7 +113,7 @@ public class ServiceTests {
     @Order(5)
     @DisplayName("listGamesEmpty")
     public void listGamesEmpty() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         ListGamesRequest req = new ListGamesRequest(authData);
         ListGamesResult res = gameService.listGames(req);
         Assertions.assertTrue(res.games().isEmpty(), "There should be no games to list");
@@ -121,7 +123,7 @@ public class ServiceTests {
     @Order(6)
     @DisplayName("JoinGameSuccess")
     public void joinGameSuccess() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         CreateGameResult createRes = addGamesToList(authData, 1).stream().toList().getFirst();
 
         String gameID = createRes.gameID();
@@ -136,6 +138,7 @@ public class ServiceTests {
                 .filter((gd) -> gd.gameID().equals(gameID))
                 .toList().getFirst();
 
+        Assertions.assertNotNull(authData, "AuthData returned null");
         Assertions.assertEquals(authData.username(), gameData.blackUsername(),
                 "User was not selected as black player");
 
@@ -146,7 +149,7 @@ public class ServiceTests {
     @DisplayName("JoinGameSpotTaken")
     public void joinGameSpotTaken() {
 
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);;
         CreateGameResult createRes = addGamesToList(authData, 1).stream().toList().getFirst();
 
         String gameID = createRes.gameID();
@@ -178,7 +181,7 @@ public class ServiceTests {
     @Order(8)
     @DisplayName("CreateGameSuccess")
     public void createGameSuccess() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);;
         Collection<CreateGameResult> createResults = addGamesToList(authData, 10);
         for (CreateGameResult res : createResults) {
             Assertions.assertEquals(Constants.OK, res.responseCode(),
@@ -193,7 +196,7 @@ public class ServiceTests {
     @Order(9)
     @DisplayName("createGameInvalidName")
     public void createGameInvalidName() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);;
         CreateGameRequest createReq = new CreateGameRequest("", authData);
         CreateGameResult res = gameService.createGame(createReq);
         Assertions.assertEquals(Constants.BAD_REQUEST, res.responseCode(),
@@ -217,8 +220,9 @@ public class ServiceTests {
         Assertions.assertFalse(registerRes.authToken().isBlank(), "Result is missing an auth token");
         Assertions.assertFalse(registerRes.username().isBlank(), "Result is missing username");
 
-        AuthData authData = authService.getAuth(registerRes.authToken());
+        AuthData authData = getAuthDataOrNull(registerRes.authToken());;
 
+        Assertions.assertNotNull(authData, "Auth data was null but was expected to have a value");
         Assertions.assertEquals(authData.username(), registerReq.username(), "Username returned by auth service was incorrect");
         Assertions.assertEquals(authData.authToken(), registerRes.authToken(), "Auth Token returned by auth service was incorrect");
     }
@@ -229,9 +233,9 @@ public class ServiceTests {
     public void registerInvalidNoPassword() {
         RegisterRequest registerReq = new RegisterRequest(nonExistingUser.username(),
                 null, nonExistingUser.email());
-        System.out.println(registerReq);
+
         RegisterResult registerRes = userService.register(registerReq);
-        System.out.println(registerRes);
+
         Assertions.assertEquals(Constants.BAD_REQUEST, registerRes.responseCode(), "Result should return a 400 response code");
         Assertions.assertTrue(registerRes.message().contains("Error"), "Result should contain an error message containing the word \"Error\"");
         Assertions.assertNull(registerRes.username(), "Username should be null");
@@ -255,8 +259,9 @@ public class ServiceTests {
         Assertions.assertFalse(loginRes.authToken().isBlank(), "Response should return valid authToken");
         Assertions.assertFalse(loginRes.username().isBlank(), "Response should return valid username");
 
-        AuthData authData = authService.getAuth(loginRes.authToken());
+        AuthData authData = getAuthDataOrNull(loginRes.authToken());
 
+        Assertions.assertNotNull(authData, "Auth data was null but was expected to have a value");
         Assertions.assertEquals(authData.authToken(), loginRes.authToken(), "Incorrect auth token was returned by auth service");
         Assertions.assertEquals(authData.username(), loginRes.username(), "Incorrect username was returned by auth service");
     }
@@ -279,13 +284,14 @@ public class ServiceTests {
     @Order(14)
     @DisplayName("logoutSuccess")
     public void logoutSuccess() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         LogoutRequest logoutReq = new LogoutRequest(authData);
         LogoutResult logoutRes = userService.logout(logoutReq);
 
+        Assertions.assertNotNull(authData,"AuthData was null but was supposed to contain a value");
         Assertions.assertEquals(Constants.OK, logoutRes.responseCode(), "Logout should have been successful");
 
-        AuthData loggedOutAuthData = authService.getAuth(authData.authToken());
+        AuthData loggedOutAuthData = getAuthDataOrNull(authData.authToken());
         assertNullOrEmpty(loggedOutAuthData);
 
     }
@@ -294,7 +300,7 @@ public class ServiceTests {
     @Order(15)
     @DisplayName("logoutNotLoggedIn")
     public void logoutNotLoggedIn() {
-        AuthData authData = authService.getAuth(existingUserAuth);
+        AuthData authData = getAuthDataOrNull(existingUserAuth);
         logoutSuccess(); // log out user
         LogoutRequest logoutReq = new LogoutRequest(authData);
         LogoutResult logoutRes = userService.logout(logoutReq);
@@ -317,6 +323,14 @@ public class ServiceTests {
         return results;
     }
 
+
+    private AuthData getAuthDataOrNull(String authToken){
+        try {
+            return authService.getAuth(authToken);
+        }catch (DataAccessException e){
+            return null;
+        }
+    }
 
     /*
      * Asserts that an object is either null or that all non-primitive fields are null

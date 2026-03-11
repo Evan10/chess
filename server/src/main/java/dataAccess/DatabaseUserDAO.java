@@ -7,7 +7,6 @@ import util.MyLogger;
 import java.sql.*;
 import java.util.logging.Logger;
 
-import static dataaccess.DataAccessException.*;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class DatabaseUserDAO implements UserDAO {
@@ -28,7 +27,6 @@ public class DatabaseUserDAO implements UserDAO {
             ResultSet set = ps.executeQuery();
             return set.next();
         } catch (SQLException | DataAccessException e) {
-            logger.warning(e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -45,13 +43,12 @@ public class DatabaseUserDAO implements UserDAO {
             ps.setString(3, userData.email());
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.warning(e.toString());
             if(e.getSQLState().startsWith("23")){ // SQLState
-                throw new DataAccessException("Error: username already in use", UNAVAILABLE_REQUEST_ERROR);
+                throw new UnavailableRequestException("Error: username already in use");
             } else if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -66,18 +63,17 @@ public class DatabaseUserDAO implements UserDAO {
             ps.setString(1,username);
             ResultSet rs = ps.executeQuery();
             if(!rs.next()){
-                throw new DataAccessException("Error: user with given username not found", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: user with given username not found");
             }
             return new UserData(
                     rs.getString("username"),
                     rs.getString("password_hash"),
                     rs.getString("email"));
         }catch (SQLException e){
-            logger.warning(e.toString());
-            if(e.getSQLState().startsWith("23")){ // unique constraint violation
-                throw new DataAccessException("Error: unique constraint violation",UNAVAILABLE_REQUEST_ERROR);
+            if (e.getSQLState().startsWith("08")) { // connectivity error
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }
-            throw new DataAccessException("Error: Internal database error",DATABASE_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -91,9 +87,9 @@ public class DatabaseUserDAO implements UserDAO {
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 

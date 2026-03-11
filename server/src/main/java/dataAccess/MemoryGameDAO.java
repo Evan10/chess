@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static dataaccess.DataAccessException.INVALID_REQUEST_ERROR;
 
 public class MemoryGameDAO implements GameDAO {
 
@@ -33,6 +32,9 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public void putGame(GameData game) {
+        boolean nameInUse = allGameData.values().stream()
+                .anyMatch((gd)->gd.gameName().equals(game.gameName()));
+
         allGameData.put(game.gameID(), game);
     }
 
@@ -45,7 +47,7 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public GameData getGame(String gameID) throws DataAccessException {
         if (!allGameData.containsKey(gameID)) {
-            throw new DataAccessException("Error: Game not found", INVALID_REQUEST_ERROR);
+            throw new InvalidRequestException("Error: Game not found");
         }
         return allGameData.get(gameID);
     }

@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static dataaccess.DataAccessException.*;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class DatabaseGameDAO implements GameDAO{
@@ -49,11 +48,11 @@ public class DatabaseGameDAO implements GameDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }else if(e.getSQLState().startsWith("42")){
-                throw new DataAccessException("Error: bad request", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: bad request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -69,7 +68,7 @@ public class DatabaseGameDAO implements GameDAO{
             ps.setString(1,gameID);
             try(ResultSet rs = ps.executeQuery()){
                 if(!rs.next()){
-                    throw new DataAccessException("Error: Game not found", INVALID_REQUEST_ERROR);
+                    throw new InvalidRequestException("Error: Game not found");
                 }
 
                 ChessGame game = serializer.
@@ -85,11 +84,11 @@ public class DatabaseGameDAO implements GameDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
            if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }else if(e.getSQLState().startsWith("42")){
-                throw new DataAccessException("Error: bad request", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: bad request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -109,13 +108,13 @@ public class DatabaseGameDAO implements GameDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if(e.getSQLState().startsWith("23")){
-                throw new DataAccessException("Error: Game name already in use", UNAVAILABLE_REQUEST_ERROR);
+                throw new UnavailableRequestException("Error: Game name already in use");
             } else if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }else if(e.getSQLState().startsWith("42")){
-                throw new DataAccessException("Error: bad request", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: bad request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -125,26 +124,28 @@ public class DatabaseGameDAO implements GameDAO{
                 UPDATE games
                 SET whiteUsername = ?,
                     blackUsername = ?,
+                    gameName = ?,
                     gameJSON = ?
                 WHERE gameID = ?;
                 """;
         try(PreparedStatement ps = getConnection().prepareStatement(statement)){
             ps.setString(1,game.whiteUsername());
             ps.setString(2,game.blackUsername());
-            ps.setString(3, serializer.toJson(game.game()));
-            ps.setString(4,game.gameID());
+            ps.setString(3,game.gameName());
+            ps.setString(4, serializer.toJson(game.game()));
+            ps.setString(5,game.gameID());
             int linesChanged = ps.executeUpdate();
             if(linesChanged==0){
-                throw new DataAccessException("Error: game not found", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: game not found");
             }
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }else if(e.getSQLState().startsWith("42")){
-                throw new DataAccessException("Error: bad request", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: bad request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
 
     }
@@ -160,9 +161,9 @@ public class DatabaseGameDAO implements GameDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 

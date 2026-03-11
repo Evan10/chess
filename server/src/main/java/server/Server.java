@@ -10,6 +10,7 @@ import service.AuthService;
 import service.ClearApplicationService;
 import service.GameService;
 import service.UserService;
+import util.Constants;
 import util.MyLogger;
 
 import java.io.IOException;
@@ -57,7 +58,11 @@ public class Server {
                 .get("/game", chessGameHandler::listGamesHandler)
                 .post("/game", chessGameHandler::createGameHandler)
                 .put("/game", chessGameHandler::joinGameHandler)
-                .after(context -> logger.info(context.status() + " " + context.result()));
+                .after(context -> logger.info(context.status() + " " + context.result()))
+                .exception(DatabaseConnectivityException.class,((_, context) ->
+                        context.status(Constants.SERVER_ERROR)
+                                .result("{ \"message\": \"Error: Internal database error\"}")
+                ));
     }
 
     public int run(int desiredPort) {

@@ -5,6 +5,7 @@ import chess.ChessGame;
 import java.sql.*;
 import java.util.Properties;
 
+
 public class DatabaseManager {
     private static String databaseName;
     private static String dbUsername;
@@ -114,7 +115,7 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to get connection", ex);
+            throw new DatabaseConnectivityException("Error: couldn't get database connection", ex);
         }
     }
 
@@ -139,5 +140,6 @@ public class DatabaseManager {
         var host = props.getProperty("db.host");
         var port = Integer.parseInt(props.getProperty("db.port"));
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
+
     }
 }

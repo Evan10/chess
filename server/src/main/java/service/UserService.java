@@ -1,17 +1,12 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 import requestresult.*;
 import util.Constants;
 import util.Util;
-
-import static dataaccess.DataAccessException.INVALID_REQUEST_ERROR;
-import static dataaccess.DataAccessException.UNAVAILABLE_REQUEST_ERROR;
 import static util.Constants.*;
 
 public class UserService {
@@ -42,25 +37,24 @@ public class UserService {
             UserData userData = new UserData(registerRequest.username(),
                     password_hash, registerRequest.email());
             userDAO.addUser(userData);
+        } catch (InvalidRequestException e){
+            return new RegisterResult(UNAUTHORIZED, e.getMessage());
+        } catch (UnavailableRequestException e){
+            return new RegisterResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = switch (e.reason){
-                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
-                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
-                default -> SERVER_ERROR;
-            };
-            return new RegisterResult(errorCode, e.getMessage());
+            return new RegisterResult(SERVER_ERROR, e.getMessage());
         }
+
         String authToken = Util.newUUID();
         AuthData authData = new AuthData(authToken, registerRequest.username());
         try {
             authDAO.addAuthData(authData);
+        } catch (InvalidRequestException e){
+            return new RegisterResult(UNAUTHORIZED, e.getMessage());
+        } catch (UnavailableRequestException e){
+            return new RegisterResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = switch (e.reason){
-                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
-                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
-                default -> SERVER_ERROR;
-            };
-            return new RegisterResult(errorCode, e.getMessage());
+            return new RegisterResult(SERVER_ERROR, e.getMessage());
         }
         return new RegisterResult(Constants.OK, null, registerRequest.username(), authToken);
 
@@ -73,23 +67,22 @@ public class UserService {
             if (!correctPassword) {
                 return new LoginResult(Constants.UNAUTHORIZED, "Error: unauthorized");
             }
+        } catch (InvalidRequestException e){
+            return new LoginResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = switch (e.reason){
-                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
-                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
-                default -> SERVER_ERROR;
-            };
-            return new LoginResult(errorCode, e.getMessage());
+            return new LoginResult(SERVER_ERROR, e.getMessage());
         }
 
         String authToken = Util.newUUID();
         AuthData authData = new AuthData(authToken, loginRequest.username());
         try {
             authDAO.addAuthData(authData);
+        } catch (InvalidRequestException e){
+            return new LoginResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = e.reason== INVALID_REQUEST_ERROR? Constants.UNAUTHORIZED: SERVER_ERROR;
-            return new LoginResult(errorCode, e.getMessage());
+            return new LoginResult(SERVER_ERROR, e.getMessage());
         }
+
         return new LoginResult(Constants.OK, null, loginRequest.username(), authToken);
     }
 
@@ -97,9 +90,10 @@ public class UserService {
     public LogoutResult logout(LogoutRequest logoutRequest) {
         try {
             authDAO.removeAuthData(logoutRequest.authData().authToken());
+        } catch (InvalidRequestException e){
+            return new LogoutResult(UNAUTHORIZED, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = e.reason== INVALID_REQUEST_ERROR? Constants.UNAUTHORIZED: SERVER_ERROR;
-            return new LogoutResult(errorCode, e.getMessage());
+            return new LogoutResult(SERVER_ERROR, e.getMessage());
         }
         return new LogoutResult(Constants.OK, "");
     }

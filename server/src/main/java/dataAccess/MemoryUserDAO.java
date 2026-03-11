@@ -5,7 +5,6 @@ import model.UserData;
 import java.util.HashMap;
 import java.util.Map;
 
-import static dataaccess.DataAccessException.INVALID_REQUEST_ERROR;
 
 public class MemoryUserDAO implements UserDAO {
 
@@ -32,7 +31,7 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public void addUser(UserData userData) throws DataAccessException {
         if (usernameInUse(userData.username())) {
-            throw new DataAccessException("Error: Username in use",INVALID_REQUEST_ERROR);
+            throw new UnavailableRequestException("Error: Username in use");
         }
         allUserData.put(userData.username(), userData);
     }
@@ -40,7 +39,7 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) throws DataAccessException {
         if (!allUserData.containsKey(username)) {
-            throw new DataAccessException("Error: User not found", INVALID_REQUEST_ERROR);
+            throw new InvalidRequestException("Error: User not found");
         }
         return allUserData.get(username);
     }

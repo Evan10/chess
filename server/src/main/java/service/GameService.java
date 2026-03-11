@@ -2,8 +2,7 @@ package service;
 
 import chess.ChessGame;
 import chess.Constants;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
+import dataaccess.*;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import requestresult.*;
@@ -41,13 +40,12 @@ public class GameService {
         GameData gameData = new GameData(gameID, null, null, req.gameName(), game);
         try {
             gameDAO.putGame(gameData);
+        } catch (InvalidRequestException e){
+            return new CreateGameResult(UNAUTHORIZED, e.getMessage());
+        } catch (UnavailableRequestException e){
+            return new CreateGameResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = switch (e.reason){
-                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
-                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
-                default -> SERVER_ERROR;
-            };
-            return new CreateGameResult(errorCode, e.getMessage());
+            return new CreateGameResult(SERVER_ERROR, e.getMessage());
         }
 
         return new CreateGameResult(util.Constants.OK, "", gameID);
@@ -75,13 +73,12 @@ public class GameService {
                         g.blackUsername(), g.gameName(), g.game());
             }
             gameDAO.updateGame(newData);
+        } catch (InvalidRequestException e){
+            return new JoinGameResult(UNAUTHORIZED, e.getMessage());
+        } catch (UnavailableRequestException e){
+            return new JoinGameResult(FORBIDDEN, e.getMessage());
         } catch (DataAccessException e) {
-            int errorCode = switch (e.reason){
-                case INVALID_REQUEST_ERROR -> UNAUTHORIZED;
-                case UNAVAILABLE_REQUEST_ERROR -> FORBIDDEN;
-                default -> SERVER_ERROR;
-            };
-            return new JoinGameResult(errorCode, e.getMessage());
+            return new JoinGameResult(SERVER_ERROR, e.getMessage());
         }
 
         return new JoinGameResult(util.Constants.OK, "");

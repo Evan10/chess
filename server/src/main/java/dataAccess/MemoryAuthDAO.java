@@ -5,7 +5,6 @@ import model.AuthData;
 import java.util.HashMap;
 import java.util.Map;
 
-import static dataaccess.DataAccessException.INVALID_REQUEST_ERROR;
 
 public class MemoryAuthDAO implements AuthDAO {
 
@@ -28,7 +27,7 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public AuthData getAuthDataWithAuthToken(String authToken) throws DataAccessException {
         if (!data.containsKey(authToken)) {
-            throw new DataAccessException("Error: Token not found", INVALID_REQUEST_ERROR);
+            throw new InvalidRequestException("Error: Token not found");
         }
         return data.get(authToken);
     }
@@ -36,7 +35,7 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public void addAuthData(AuthData userData) throws DataAccessException {
         if (data.containsKey(userData.authToken())) {
-            throw new DataAccessException("Error: Auth Token already in use", INVALID_REQUEST_ERROR);
+            throw new InvalidRequestException("Error: Auth Token already in use");
         }
         data.put(userData.authToken(), userData);
     }

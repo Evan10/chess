@@ -6,7 +6,6 @@ import util.MyLogger;
 import java.sql.*;
 import java.util.logging.Logger;
 
-import static dataaccess.DataAccessException.*;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class DatabaseAuthDAO implements AuthDAO{
@@ -28,7 +27,7 @@ public class DatabaseAuthDAO implements AuthDAO{
             ps.setString(1,authToken);
             try(ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
-                    throw new DataAccessException("Error: invalid authToken", INVALID_REQUEST_ERROR);
+                    throw new InvalidRequestException("Error: invalid authToken");
                 }
                 return new AuthData(
                         rs.getString("authenticationToken"),
@@ -37,9 +36,11 @@ public class DatabaseAuthDAO implements AuthDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
+            }else if(e.getSQLState().startsWith("23")){
+                throw new InvalidRequestException("Error: Invalid request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -57,9 +58,11 @@ public class DatabaseAuthDAO implements AuthDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
+            }else if(e.getSQLState().startsWith("23")){
+                throw new InvalidRequestException("Error: Invalid request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -73,14 +76,16 @@ public class DatabaseAuthDAO implements AuthDAO{
             ps.setString(1,authToken);
             int rowsAffected = ps.executeUpdate();
             if(rowsAffected==0){
-                throw new DataAccessException("Error: unauthorized", INVALID_REQUEST_ERROR);
+                throw new InvalidRequestException("Error: invalid request");
             }
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
+            }else if(e.getSQLState().startsWith("23")){
+                throw new InvalidRequestException("Error: Invalid request");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
@@ -94,9 +99,9 @@ public class DatabaseAuthDAO implements AuthDAO{
         } catch (SQLException e) {
             logger.warning(e.toString());
             if (e.getSQLState().startsWith("08")) { // connectivity error
-                throw new DataAccessException("Error: Internal Database error", DATABASE_ERROR);
+                throw new DatabaseConnectivityException("Error: Internal Database error");
             }
-            throw new DataAccessException(e.toString(),UNKNOWN_ERROR);
+            throw new DataAccessException(e.toString());
         }
     }
 
