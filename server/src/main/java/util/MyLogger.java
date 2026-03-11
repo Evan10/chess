@@ -1,5 +1,6 @@
 package util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ public class MyLogger {
         if (logger == null) {
             logger = Logger.getLogger("ChessLogger");
             try {
+                ensureLogSetup();
                 FileHandler handler = new FileHandler("log/Chess.log", true);
                 handler.setFormatter(new SimpleFormatter());
                 logger.addHandler(handler);
@@ -21,6 +23,21 @@ public class MyLogger {
             }
         }
         return logger;
+    }
+
+    private static void ensureLogSetup() throws IOException {
+        File dir = new File("log");
+        if(!dir.exists()) {
+            if(!dir.mkdir()){
+                throw new RuntimeException("Couldn't make directory for logger file");
+            }
+        }
+        File gitAddFile = new File("log/.gitkeep");
+        if(!gitAddFile.exists()) {
+            if(!gitAddFile.createNewFile()){
+                throw new RuntimeException("Couldn't make directory for logger file");
+            }
+        }
     }
 
 }
