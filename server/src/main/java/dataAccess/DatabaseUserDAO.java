@@ -13,7 +13,7 @@ import java.sql.Statement;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
-import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
+import static dataaccess.exception.SQLStateToErrorConverter.convertSQLStateToError;
 
 public class DatabaseUserDAO implements UserDAO {
 
@@ -50,7 +50,7 @@ public class DatabaseUserDAO implements UserDAO {
             ps.setString(3, userData.email());
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -72,7 +72,7 @@ public class DatabaseUserDAO implements UserDAO {
                     rs.getString("password_hash"),
                     rs.getString("email"));
         } catch (SQLException e) {
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -85,7 +85,7 @@ public class DatabaseUserDAO implements UserDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 

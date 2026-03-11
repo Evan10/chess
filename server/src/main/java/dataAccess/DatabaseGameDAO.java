@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
-import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
+import static dataaccess.exception.SQLStateToErrorConverter.convertSQLStateToError;
 
 public class DatabaseGameDAO implements GameDAO {
     private final Gson serializer;
@@ -50,7 +50,7 @@ public class DatabaseGameDAO implements GameDAO {
             return gameList;
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -80,7 +80,7 @@ public class DatabaseGameDAO implements GameDAO {
                 );
             }
         } catch (SQLException e) {
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -99,7 +99,7 @@ public class DatabaseGameDAO implements GameDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -125,7 +125,7 @@ public class DatabaseGameDAO implements GameDAO {
             }
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
 
     }
@@ -140,7 +140,7 @@ public class DatabaseGameDAO implements GameDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 

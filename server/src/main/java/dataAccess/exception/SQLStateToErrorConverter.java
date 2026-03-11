@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class SQLStateToErrorConverter {
     private static final Logger LOGGER = MyLogger.getLogger();
-    public static DataAccessException SQLStateToError(SQLException e){
+    public static DataAccessException convertSQLStateToError(SQLException e){
         LOGGER.info("["+e.getSQLState()+":"+e.getErrorCode()+"] "+e.getMessage());
         if (e.getSQLState().startsWith("08")) { // connectivity error
             return new DatabaseConnectivityException("Error: Internal database error");

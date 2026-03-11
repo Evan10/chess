@@ -12,7 +12,7 @@ import java.sql.Statement;
 import java.util.logging.Logger;
 
 import static dataaccess.DatabaseManager.getConnection;
-import static dataaccess.exception.SQLStateToErrorConverter.SQLStateToError;
+import static dataaccess.exception.SQLStateToErrorConverter.convertSQLStateToError;
 
 public class DatabaseAuthDAO implements AuthDAO {
 
@@ -41,7 +41,7 @@ public class DatabaseAuthDAO implements AuthDAO {
             }
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -58,7 +58,7 @@ public class DatabaseAuthDAO implements AuthDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -76,7 +76,7 @@ public class DatabaseAuthDAO implements AuthDAO {
             }
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
@@ -89,7 +89,7 @@ public class DatabaseAuthDAO implements AuthDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             LOGGER.warning(e.toString());
-            throw SQLStateToError(e);
+            throw convertSQLStateToError(e);
         }
     }
 
