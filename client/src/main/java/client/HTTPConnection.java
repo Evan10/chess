@@ -1,4 +1,4 @@
-package client.dataaccess;
+package client;
 
 import java.net.http.HttpClient;
 import java.util.Locale;
@@ -12,7 +12,7 @@ public class HTTPConnection{
     private int port;
     private String url;
 
-    HTTPConnection(String host, int port){
+    public HTTPConnection(String host, int port){
         this.host = host;
         this.port = port;
         url = String.format(Locale.getDefault(),"http://%s:%d",host,port);
