@@ -11,6 +11,8 @@ out/
 
 ### Chess project ###
 server/**/db.properties
+client/**/client.properties
 
 ### Log ##
 log/*.log
+
