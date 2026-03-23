@@ -6,7 +6,7 @@ public class ChessClient {
     private boolean running = false;
 
     RequestHandler requestHandler;
-    public ClientState state;
+    private ClientState state;
     private final HTTPConnection serverConnection;
 
     public ChessClient(String host){
@@ -23,6 +23,8 @@ public class ChessClient {
     private void run(){
         Scanner input = new Scanner(System.in);
         String value = "";
+        System.out.println("Welcome To Chess Client! Type help to start");
+        System.out.printf(state.name +" >>");
         while(running){
             value = input.nextLine();
             String output = requestHandler.handle(value);
@@ -30,9 +32,18 @@ public class ChessClient {
                 running = false;
                 continue;
             }
-            System.out.printf(output);
+            System.out.printf(output +"\n");
+            System.out.printf(state.name +" >>");
         }
         serverConnection.close();
+    }
+
+
+    public void setState(ClientState state){
+        this.state = state;
+    }
+    public ClientState getState(){
+        return state;
     }
 
 }

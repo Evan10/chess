@@ -1,10 +1,17 @@
 package client;
 
+import chess.ChessGame;
+
 import static client.ClientCommands.*;
+import static client.ClientState.LOGGED_IN;
 import static client.ClientState.LOGGED_OUT;
+import static client.ClientUtils.stringToTeamColor;
 
 public class RequestHandler {
 
+
+    private static final String NOT_LOGGED_IN_MESSAGE = "Unable to use command, \n" +
+            "user must be logged in";
     private final HTTPConnection connection;
     private final ChessClient client;
     RequestHandler(HTTPConnection connection, ChessClient client){
@@ -20,24 +27,26 @@ public class RequestHandler {
             case QUIT -> handleQuit();
             case LOGIN -> handleLogin(parts);
             case REGISTER -> handleRegister(parts);
-            case LOGOUT -> "";
-            case CREATE_GAME -> "";
-            case LIST_GAMES -> "";
-            case JOIN_GAME -> "";
-            case OBSERVE_GAME -> "";
+            case LOGOUT -> handleLogout();
+            case CREATE_GAME -> handleCreateGame(parts);
+            case LIST_GAMES -> handleListGames();
+            case JOIN_GAME -> handleJoinGame(parts);
+            case OBSERVE_GAME -> handleObserveGame(parts);
             default -> handleUnknown();
         };
     }
+
+
 
     private String handleUnknown(){
         return "Unknown command; Please use a valid command \n" + handleHelp();
     }
 
     private String handleHelp(){
-        if(client.state == LOGGED_OUT){
+        if(client.getState() == LOGGED_OUT){
             return """
-                    register <USERNAME> <PASSWORD> <EMAIL> - create an account
-                    login <USERNAME> <PASSWORD> - to play chess
+                    register <Username> <Password> <Email> - create an account
+                    login <Username> <Password> - to play chess
                     quit - chess client
                     help - commands
                     """;
@@ -45,8 +54,8 @@ public class RequestHandler {
             return """
                     create <Name> - create a chess game
                     list - all chess games
-                    join <GAME_ID> [BLACK|WHITE]
-                    observe <GAME_ID> - a chess game
+                    join <GameID> [BLACK|WHITE]
+                    observe <GameID> - a chess game
                     logout - of chess client
                     quit - chess client
                     help - commands
@@ -56,15 +65,105 @@ public class RequestHandler {
     }
 
     private String handleQuit(){
+        if(client.getState() == LOGGED_IN) {
+            connection.logout();
+        }
         return "quit";
     }
 
+    private String handleLogout(){
+        if(client.getState() == LOGGED_OUT){
+            return NOT_LOGGED_IN_MESSAGE;
+        }
+        connection.logout();
+        return "";
+    }
+
     private String handleLogin(String[] args){
+        if(args.length != 3){
+            return """
+                    Invalid login command\s
+                    Must be of format:\s
+                        login <username> <password>""";
+        }
+        String username = args[1];
+        String password = args[2];
+        connection.login(username, password);
         return "";
     }
 
     private String handleRegister(String[] args){
+        if(args.length != 4){
+            return """
+                    Invalid register command\s
+                    Must be of format:\s
+                        register <username> <password> <email>""";
+        }
+        String username = args[1];
+        String password = args[2];
+        String email = args[3];
+        connection.register(username,password,email);
         return "";
+    }
+
+
+    private String handleCreateGame(String[] args){
+        if(client.getState() == LOGGED_OUT){
+            return NOT_LOGGED_IN_MESSAGE;
+        }
+        if(args.length != 2){
+            return """
+                    Invalid create command\s
+                    Must be of format:\s
+                        create <Name>""";
+        }
+        String name = args[1];
+        connection.createGame(name);
+        return "Created";
+    }
+
+    private String handleJoinGame(String[] args){
+        if(client.getState() == LOGGED_OUT){
+            return NOT_LOGGED_IN_MESSAGE;
+        }
+        if(args.length != 3){
+            return """
+                    Invalid join command\s
+                    Must be of format:\s
+                        join <GameID> [BLACK|WHITE]""";
+        }
+        String gameID = args[1];
+        ChessGame.TeamColor team;
+        try{
+            team = stringToTeamColor(args[2]);
+        }catch (IllegalArgumentException e){
+            return "Invalid color provided must be \"Black\" or \"White\"";
+        }
+        connection.joinGame(gameID,team);
+        return "Joined";
+    }
+
+    private String handleObserveGame(String[] args){
+        if(client.getState() == LOGGED_OUT){
+            return NOT_LOGGED_IN_MESSAGE;
+        }
+        if(args.length != 2){
+            return """
+                    Invalid observe command\s
+                    Must be of format:\s
+                        observe <GameID>""";
+        }
+        String gameID = args[1];
+        connection.observeGame(gameID);
+        return "Observed";
+    }
+
+    private String handleListGames(){
+        if(client.getState() == LOGGED_OUT){
+            return NOT_LOGGED_IN_MESSAGE;
+        }
+        connection.getGameList();
+        return "Listed";
     }
 
 }
