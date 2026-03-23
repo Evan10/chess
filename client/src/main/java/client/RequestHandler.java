@@ -1,5 +1,8 @@
 package client;
 
+import static client.ClientCommands.*;
+import static client.ClientState.LOGGED_OUT;
+
 public class RequestHandler {
 
     private final HTTPConnection connection;
@@ -13,20 +16,43 @@ public class RequestHandler {
         String[] parts = message.split(" ");
         String command = parts[0].toLowerCase();
         return switch (command){
-            case "help" -> handleHelp();
-            case "quit" -> handleQuit();
-            case "login" -> handleLogin(parts);
-            case "register" -> handleRegister(parts);
-            default -> handleHelp();
+            case HELP -> handleHelp();
+            case QUIT -> handleQuit();
+            case LOGIN -> handleLogin(parts);
+            case REGISTER -> handleRegister(parts);
+            case LOGOUT -> "";
+            case CREATE_GAME -> "";
+            case LIST_GAMES -> "";
+            case JOIN_GAME -> "";
+            case OBSERVE_GAME -> "";
+            default -> handleUnknown();
         };
     }
 
-    private static String handleUnknown(){
-
+    private String handleUnknown(){
+        return "Unknown command; Please use a valid command \n" + handleHelp();
     }
 
-    private static String handleHelp(){
-        return "";
+    private String handleHelp(){
+        if(client.state == LOGGED_OUT){
+            return """
+                    register <USERNAME> <PASSWORD> <EMAIL> - create an account
+                    login <USERNAME> <PASSWORD> - to play chess
+                    quit - chess client
+                    help - commands
+                    """;
+        }else{
+            return """
+                    create <Name> - create a chess game
+                    list - all chess games
+                    join <GAME_ID> [BLACK|WHITE]
+                    observe <GAME_ID> - a chess game
+                    logout - of chess client
+                    quit - chess client
+                    help - commands
+                    """;
+        }
+
     }
 
     private String handleQuit(){

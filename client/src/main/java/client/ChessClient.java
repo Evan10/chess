@@ -7,13 +7,13 @@ public class ChessClient {
 
     RequestHandler requestHandler;
     public ClientState state;
-
+    private final HTTPConnection serverConnection;
 
     public ChessClient(String host){
         state = ClientState.LOGGED_OUT;
 
-        HTTPConnection serverConnection = new HTTPConnection(host,8080);
-        requestHandler = new RequestHandler(ChessClient, serverConnection);
+        serverConnection = new HTTPConnection(host,8080);
+        requestHandler = new RequestHandler(serverConnection, this);
         running = true;
         run();
 
