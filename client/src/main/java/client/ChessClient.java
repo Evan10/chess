@@ -1,19 +1,22 @@
 package client;
 
+import ui.EscapeSequences;
+
 import java.util.Scanner;
 
 public class ChessClient {
     private boolean running = false;
 
     RequestHandler requestHandler;
-    private ClientState state;
-    private final HTTPConnection serverConnection;
+    public ClientSessionData sessionData;
+    private final ServerFacade serverConnection;
 
     public ChessClient(String host){
-        state = ClientState.LOGGED_OUT;
+        sessionData = new ClientSessionData();
+        sessionData.setState(ClientState.LOGGED_OUT);
 
-        serverConnection = new HTTPConnection(host,8080);
-        requestHandler = new RequestHandler(serverConnection, this);
+        serverConnection = new ServerFacade(host,8080);
+        requestHandler = new RequestHandler(serverConnection, sessionData);
         running = true;
         run();
 
@@ -24,7 +27,7 @@ public class ChessClient {
         Scanner input = new Scanner(System.in);
         String value = "";
         System.out.println("Welcome To Chess Client! Type help to start");
-        System.out.printf(state.name +" >>");
+        printNewCommandLine();
         while(running){
             value = input.nextLine();
             String output = requestHandler.handle(value);
@@ -33,17 +36,19 @@ public class ChessClient {
                 continue;
             }
             System.out.printf(output +"\n");
-            System.out.printf(state.name +" >>");
+            printNewCommandLine();
         }
         serverConnection.close();
     }
 
+    private void printNewCommandLine(){
+        System.out.printf(EscapeSequences.RESET_BG_COLOR +
+                EscapeSequences.RESET_TEXT_COLOR +
+                EscapeSequences.RESET_TEXT_UNDERLINE +
+                EscapeSequences.RESET_TEXT_BOLD_FAINT+
+                sessionData.getState().name +" >>");
+    }
 
-    public void setState(ClientState state){
-        this.state = state;
-    }
-    public ClientState getState(){
-        return state;
-    }
+
 
 }

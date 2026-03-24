@@ -1,8 +1,4 @@
 import client.ChessClient;
-import client.RequestHandler;
-import client.HTTPConnection;
-
-import java.util.Scanner;
 
 
 public class ClientMain {

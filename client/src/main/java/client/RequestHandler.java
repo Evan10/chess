@@ -1,6 +1,10 @@
 package client;
 
 import chess.ChessGame;
+import model.AuthData;
+import model.GameData;
+
+import java.util.Collection;
 
 import static client.ClientCommands.*;
 import static client.ClientState.LOGGED_IN;
@@ -12,11 +16,16 @@ public class RequestHandler {
 
     private static final String NOT_LOGGED_IN_MESSAGE = "Unable to use command, \n" +
             "user must be logged in";
-    private final HTTPConnection connection;
-    private final ChessClient client;
-    RequestHandler(HTTPConnection connection, ChessClient client){
+    private static final String GAME_NOT_FOUND_MESSAGE = """
+                     Game was not found in local cache; try using the command:
+                        list
+                     To list the game
+                     """;
+    private final ServerFacade connection;
+    private final ClientSessionData sessionData;
+    RequestHandler(ServerFacade connection, ClientSessionData sessionData){
         this.connection=connection;
-        this.client=client;
+        this.sessionData=sessionData;
     }
 
     public String handle(String message){
@@ -43,7 +52,7 @@ public class RequestHandler {
     }
 
     private String handleHelp(){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return """
                     register <Username> <Password> <Email> - create an account
                     login <Username> <Password> - to play chess
@@ -65,17 +74,27 @@ public class RequestHandler {
     }
 
     private String handleQuit(){
-        if(client.getState() == LOGGED_IN) {
-            connection.logout();
+        if(sessionData.getState() == LOGGED_IN) {
+            try {
+                connection.logout();
+            } catch (FailResponseCodeException _) {
+            }
         }
         return "quit";
     }
 
     private String handleLogout(){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
-        connection.logout();
+        sessionData.setAuthData(null);
+        sessionData.setState(LOGGED_OUT);
+        try {
+            connection.logout();
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
+
         return "";
     }
 
@@ -88,8 +107,14 @@ public class RequestHandler {
         }
         String username = args[1];
         String password = args[2];
-        connection.login(username, password);
-        return "";
+        try {
+            AuthData authData = connection.login(username, password);
+            sessionData.setAuthData(authData);
+            sessionData.setState(LOGGED_IN);
+            return authData.username() +" is logged in";
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
     }
 
     private String handleRegister(String[] args){
@@ -102,13 +127,19 @@ public class RequestHandler {
         String username = args[1];
         String password = args[2];
         String email = args[3];
-        connection.register(username,password,email);
-        return "";
+        try {
+            AuthData authData= connection.register(username,password,email);
+            sessionData.setAuthData(authData);
+            sessionData.setState(LOGGED_IN);
+            return authData.username() +" registered";
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
     }
 
 
     private String handleCreateGame(String[] args){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
         if(args.length != 2){
@@ -118,12 +149,19 @@ public class RequestHandler {
                         create <Name>""";
         }
         String name = args[1];
-        connection.createGame(name);
-        return "Created";
+        try {
+            GameData gameData = connection.createGame(name);
+            if(gameData==null) {
+                return "Game wasn't created";
+            }
+            return "Game created with ID: " + gameData.gameID();
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
     }
 
     private String handleJoinGame(String[] args){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
         if(args.length != 3){
@@ -139,12 +177,30 @@ public class RequestHandler {
         }catch (IllegalArgumentException e){
             return "Invalid color provided must be \"Black\" or \"White\"";
         }
-        connection.joinGame(gameID,team);
-        return "Joined";
+        if(!sessionData.isValidGame(gameID)){
+            return """
+                     Game was not found in local cache; try using the command:
+                        list
+                     To list the game
+                     """;
+        }
+        if(!sessionData.isValidGame(gameID)){
+            return GAME_NOT_FOUND_MESSAGE;
+        }
+        try {
+            GameData gameData = connection.joinGame(gameID,team);
+            sessionData.setCurrentGame(gameData);
+            if(gameData == null){
+                return "Game not joined";
+            }
+            return "Joined game: " + gameData.gameName();
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
     }
 
     private String handleObserveGame(String[] args){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
         if(args.length != 2){
@@ -154,16 +210,38 @@ public class RequestHandler {
                         observe <GameID>""";
         }
         String gameID = args[1];
-        connection.observeGame(gameID);
-        return "Observed";
+        if(!sessionData.isValidGame(gameID)){
+            return GAME_NOT_FOUND_MESSAGE;
+        }
+        try {
+            GameData gameData = connection.observeGame(gameID);
+            sessionData.setCurrentGameID(gameID);
+            if(gameData == null){
+                return "Game not observed";
+            }
+            return "Observing game: " + gameData.gameName();
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
     }
 
     private String handleListGames(){
-        if(client.getState() == LOGGED_OUT){
+        if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
-        connection.getGameList();
-        return "Listed";
+        try {
+            Collection<GameData> games = connection.getGameList();
+            sessionData.setGames(games);
+            return "Games";
+        } catch (FailResponseCodeException e) {
+            return e.getMessage();
+        }
+
+    }
+
+    private String validGameCheck(String gameID){
+
+        return null;
     }
 
 }
