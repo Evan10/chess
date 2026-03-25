@@ -35,7 +35,9 @@ public class ClientSessionData {
     }
 
     public boolean isValidGame(String gameID){
-        if(games == null) return false;
+        if(games == null){
+            return false;
+        }
         for(GameData g : games){
             if(g.gameID().equals(gameID)){
                 return true;
@@ -45,7 +47,9 @@ public class ClientSessionData {
     }
 
     public GameData getGameFromCache(String gameID){
-        if(games == null) return null;
+        if(games == null) {
+            return null;
+        }
         for(GameData g : games){
             if(g.gameID().equals(gameID)){
                 return g;

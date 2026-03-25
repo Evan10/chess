@@ -18,8 +18,8 @@ import java.util.Map;
 
 public class ServerFacade {
 
-    private static final HttpClient client = HttpClient.newBuilder().build();
-    private static final Gson jsonConverter = new Gson();
+    private static final HttpClient CLIENT = HttpClient.newBuilder().build();
+    private static final Gson JSON_CONVERTER = new Gson();
 
     private final String url;
 
@@ -33,7 +33,7 @@ public class ServerFacade {
     void clearDatabase() throws FailResponseCodeException{
         HttpRequest req = requestHelper("db").DELETE().build();
         try{
-            client.send(req, HttpResponse.BodyHandlers.ofString());
+            CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new FailResponseCodeException("Server is not running");
         }
@@ -47,7 +47,7 @@ public class ServerFacade {
             return;
         }
         try {
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
             if(res.statusCode() == 401){
                 throw new FailResponseCodeException("User wasn't logged in");
             }
@@ -57,13 +57,13 @@ public class ServerFacade {
     }
 
     AuthData login(String username, String password) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of("username", username, "password", password));
+        String jsonBody = JSON_CONVERTER.toJson(Map.of("username", username, "password", password));
         HttpRequest req = requestHelper("session")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
         try {
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            LoginResult result = jsonConverter.fromJson(res.body(),LoginResult.class);
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            LoginResult result = JSON_CONVERTER.fromJson(res.body(),LoginResult.class);
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
@@ -75,7 +75,7 @@ public class ServerFacade {
     }
 
     AuthData register(String username, String password, String email) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of
+        String jsonBody = JSON_CONVERTER.toJson(Map.of
                         ("username", username,
                         "password", password,
                         "email", email));
@@ -83,8 +83,8 @@ public class ServerFacade {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
         try{
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            RegisterResult result = jsonConverter.fromJson(res.body(), RegisterResult.class);
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            RegisterResult result = JSON_CONVERTER.fromJson(res.body(), RegisterResult.class);
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
@@ -99,8 +99,8 @@ public class ServerFacade {
     Collection<GameData> getGameList() throws FailResponseCodeException{
         HttpRequest req = withAuth(requestHelper("game")).GET().build();
         try {
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            ListGamesResult result = jsonConverter.fromJson(res.body(), ListGamesResult.class);
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            ListGamesResult result = JSON_CONVERTER.fromJson(res.body(), ListGamesResult.class);
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
@@ -111,14 +111,14 @@ public class ServerFacade {
     }
 
     String createGame(String name) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of
+        String jsonBody = JSON_CONVERTER.toJson(Map.of
                 ("gameName", name));
         HttpRequest req = withAuth(requestHelper("game"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
         try {
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            CreateGameResult result = jsonConverter.fromJson(res.body(), CreateGameResult.class);
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            CreateGameResult result = JSON_CONVERTER.fromJson(res.body(), CreateGameResult.class);
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
@@ -129,14 +129,14 @@ public class ServerFacade {
     }
 
     void joinGame(String gameID, ChessGame.TeamColor color) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of
+        String jsonBody = JSON_CONVERTER.toJson(Map.of
                 ("gameID", gameID, "playerColor", color.name()));
         HttpRequest req =withAuth(requestHelper("game"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
         try {
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            JoinGameResult result = jsonConverter.fromJson(res.body(), JoinGameResult.class);
+            HttpResponse<String> res = CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+            JoinGameResult result = JSON_CONVERTER.fromJson(res.body(), JoinGameResult.class);
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
@@ -146,7 +146,7 @@ public class ServerFacade {
     }
 
     GameData observeGame(String gameID) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of("gameID", gameID));
+        String jsonBody = JSON_CONVERTER.toJson(Map.of("gameID", gameID));
         if(sessionData.getAuthData()== null && !jsonBody.isBlank()){
 
             throw new FailResponseCodeException("No auth");
@@ -156,7 +156,7 @@ public class ServerFacade {
     }
 
     public void close(){
-        client.close();
+        CLIENT.close();
     }
 
 
@@ -172,7 +172,9 @@ public class ServerFacade {
     }
     private HttpRequest.Builder withAuth(HttpRequest.Builder builder) throws NullPointerException{
         AuthData authData =sessionData.getAuthData();
-        if(authData == null) throw new NullPointerException();
+        if(authData == null) {
+            throw new NullPointerException();
+        }
         return builder.header("Authorization",authData.authToken());
     }
 

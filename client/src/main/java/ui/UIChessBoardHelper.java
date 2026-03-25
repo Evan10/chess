@@ -13,10 +13,10 @@ public class UIChessBoardHelper {
     }
 
 
-    public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor Color){
+    public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor color){
         StringBuilder uiBoard = new StringBuilder();
         ChessBoard board = chessGame.getBoard();
-        boolean orientation = Color.equals(ChessGame.TeamColor.WHITE);
+        boolean orientation = color.equals(ChessGame.TeamColor.WHITE);
         boolean tileBlack = false;
         uiBoard.append(drawNumbers(orientation));
         int xVal, yVal;
