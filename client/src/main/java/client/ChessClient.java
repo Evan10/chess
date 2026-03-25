@@ -1,11 +1,10 @@
 package client;
 
 import ui.EscapeSequences;
-
 import java.util.Scanner;
 
 public class ChessClient {
-    private boolean running = false;
+    private boolean running;
 
     RequestHandler requestHandler;
     public ClientSessionData sessionData;
@@ -19,13 +18,12 @@ public class ChessClient {
         requestHandler = new RequestHandler(serverConnection, sessionData);
         running = true;
         run();
-
     }
 
 
     private void run(){
         Scanner input = new Scanner(System.in);
-        String value = "";
+        String value;
         System.out.println("Welcome To Chess Client! Type help to start");
         printNewCommandLine();
         while(running){

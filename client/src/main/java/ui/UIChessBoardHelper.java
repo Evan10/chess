@@ -4,7 +4,6 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import model.GameData;
 
 public class UIChessBoardHelper {
 
@@ -17,13 +16,9 @@ public class UIChessBoardHelper {
     public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor Color){
         StringBuilder uiBoard = new StringBuilder();
         ChessBoard board = chessGame.getBoard();
-        ChessPiece[][] boardData = chessGame.getBoard().getBoardData();
-
         boolean orientation = Color.equals(ChessGame.TeamColor.WHITE);
         boolean tileBlack = false;
-
         uiBoard.append(drawNumbers(orientation));
-        uiBoard.append("\n");
         int xVal, yVal;
         for(int y = 1; y<=8 ; y++){
             yVal = orientation? 9-y:y;
@@ -36,10 +31,8 @@ public class UIChessBoardHelper {
                 uiBoard.append(piece);
             }
             uiBoard.append(drawLetter(yVal));
-
             tileBlack = !tileBlack;
             uiBoard.append(resetAll());
-            uiBoard.append("\n");
         }
         uiBoard.append(drawNumbers(orientation));
         return uiBoard.toString();
@@ -83,7 +76,7 @@ public class UIChessBoardHelper {
                 + EscapeSequences.SET_TEXT_COLOR_WHITE
                 + EscapeSequences.SET_TEXT_BOLD
                 + EscapeSequences.EMPTY
-                + (orientation ? " 1  2   3   4  5   6  7   8":" 8  7   6   5  4   3  2   1")
+                + (orientation ? " 1  2   3   4  5   6  7   8\n":" 8  7   6   5  4   3  2   1\n")
                 + EscapeSequences.EMPTY
                 + resetAll();
     }

@@ -2,19 +2,17 @@ package client;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
 import model.AuthData;
 import model.GameData;
 import model.endpointresults.*;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,7 +33,7 @@ public class ServerFacade {
     void clearDatabase() throws FailResponseCodeException{
         HttpRequest req = requestHelper("db").DELETE().build();
         try{
-            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            client.send(req, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new FailResponseCodeException("Server is not running");
         }
@@ -148,9 +146,9 @@ public class ServerFacade {
     }
 
     GameData observeGame(String gameID) throws FailResponseCodeException{
-        String jsonBody = jsonConverter.toJson(Map.of
-                ("gameID", gameID));
-        if(sessionData.getAuthData()== null){
+        String jsonBody = jsonConverter.toJson(Map.of("gameID", gameID));
+        if(sessionData.getAuthData()== null && !jsonBody.isBlank()){
+
             throw new FailResponseCodeException("No auth");
         }
         //works with websockets
