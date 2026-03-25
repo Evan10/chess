@@ -1,7 +1,12 @@
 package client;
 
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
+
+import java.util.Collection;
 
 
 public class ServerFacadeTests {
@@ -24,19 +29,153 @@ public class ServerFacadeTests {
             facade.clearDatabase();
             facade.logout();
         } catch (FailResponseCodeException e) {
-            throw new RuntimeException(e);
+            System.out.println("User was not logged in");
         }
     }
 
     @AfterAll
-    static void stopServer() {
+    static void stop() {
+        facade.close();
         server.stop();
     }
 
 
     @Test
-    public void sampleTest() {
-        Assertions.assertTrue(true);
+    public void shouldLogUserInWhenRegistered() {
+        String username= "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username,password,"Test"));
+            facade.logout();
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+        Assertions.assertDoesNotThrow(()->facade.login(username, password));
     }
 
+    @Test
+    public void shouldFailLogUserInWhenNotRegistered() {
+        Assertions.assertThrows(FailResponseCodeException.class,
+                ()->facade.login("nonexistantusername", "nonexistantpassword"));
+    }
+
+    @Test
+    public void shouldRegisterUserWhenAvailable(){
+        String username= "Test";
+        String password = "Test";
+        try {
+            model.AuthData authData = facade.register(username, password, "Test");
+            Assertions.assertNotNull(authData);
+            Assertions.assertFalse(authData.authToken().isBlank());
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void shouldFailRegisterUserUsernameWhenUsernameInUse(){
+        String username= "TestDoubleRegister";
+        String password = "TestDoubleRegister";
+        String email = "TestDoubleRegister";
+        try {
+            model.AuthData authData = facade.register(username, password, email);
+            Assertions.assertNotNull(authData);
+            Assertions.assertFalse(authData.authToken().isBlank());
+        }   catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+        Assertions.assertThrows(FailResponseCodeException.class,
+                ()->facade.register(username, password, email));
+    }
+
+    @Test
+    public void shouldLogoutUserWhenLoggedIn(){
+        String username= "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username,password,"Test"));
+            Assertions.assertDoesNotThrow(()->facade.logout());
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void shouldFailLogoutWhenNotLoggedIn(){
+        Assertions.assertThrows(FailResponseCodeException.class,()->facade.logout());
+    }
+
+    @Test
+    public void shouldListGamesWhenHasAuth(){
+        String username= "Test";
+        String password = "Test";
+        int gameCount = 10;
+        try {
+            sessionData.setAuthData(facade.register(username,password,"Test"));
+            generateRandomGames(gameCount);
+            Collection<GameData> games = facade.getGameList();
+            Assertions.assertEquals(gameCount, games.size());
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+    }
+    @Test
+    public void shouldFailListGamesWhenNoAuth(){
+        Assertions.assertThrows(FailResponseCodeException.class, ()->facade.getGameList());
+    }
+
+    @Test
+    public void shouldCreateGameWhenHasAuth(){
+        String username= "Test";
+        String password = "Test";
+        int gameCount = 10;
+        try {
+            sessionData.setAuthData(facade.register(username, password, "Test"));
+            Assertions.assertDoesNotThrow(()->generateRandomGames(gameCount));
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void shouldFailCreateGameWhenNoAuth(){
+        Assertions.assertThrows(FailResponseCodeException.class,
+                ()->facade.createGame("GameNoAuth"));
+    }
+
+    @Test
+    public void shouldJoinGameWhenHasAuth(){
+        String username= "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username, password, "Test"));
+            String gameID = facade.createGame("GameName");
+
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void shouldFailJoinGameWhenSpotTaken(){
+
+    }
+
+    @Test
+    public void shouldObserveGameWhenHasAuth(){
+
+    }
+
+    @Test
+    public void shouldFailObserveGameWhenNoAuth(){
+
+    }
+
+
+
+    private void generateRandomGames(int n) throws FailResponseCodeException {
+        for(int i = 0 ; i < n; i++){
+            facade.createGame("Game"+i);
+        }
+    }
 }

@@ -142,7 +142,6 @@ public class ServerFacade {
             if(res.statusCode()!= 200){
                 throw new FailResponseCodeException(result.message());
             }
-
         } catch (IOException | InterruptedException e){
             throw new FailResponseCodeException("Server is not running");
         }
