@@ -6,6 +6,7 @@ import model.GameData;
 import ui.UIChessBoardHelper;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static client.ClientCommands.*;
 import static client.ClientState.LOGGED_IN;
@@ -52,6 +53,7 @@ public class RequestHandler {
         return "Unknown command; Please use a valid command \n" + handleHelp();
     }
 
+
     private String handleHelp(){
         if(sessionData.getState() == LOGGED_OUT){
             return """
@@ -88,15 +90,15 @@ public class RequestHandler {
         if(sessionData.getState() == LOGGED_OUT){
             return NOT_LOGGED_IN_MESSAGE;
         }
-        sessionData.setAuthData(null);
-        sessionData.setState(LOGGED_OUT);
         try {
             connection.logout();
+            sessionData.setAuthData(null);
+            sessionData.setState(LOGGED_OUT);
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
 
-        return "";
+        return "User logged out";
     }
 
     private String handleLogin(String[] args){
@@ -112,7 +114,7 @@ public class RequestHandler {
             AuthData authData = connection.login(username, password);
             sessionData.setAuthData(authData);
             sessionData.setState(LOGGED_IN);
-            return authData.username() +" is logged in";
+            return String.format("Welcome %s!",authData.username());
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
@@ -151,11 +153,8 @@ public class RequestHandler {
         }
         String name = args[1];
         try {
-            GameData gameData = connection.createGame(name);
-            if(gameData==null) {
-                return "Game wasn't created";
-            }
-            return "Game created with ID: " + gameData.gameID();
+            String gameID = connection.createGame(name);
+            return "Game created with ID: " + gameID;
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
@@ -214,8 +213,9 @@ public class RequestHandler {
             return GAME_NOT_FOUND_MESSAGE;
         }
         try {
-            GameData gameData = connection.observeGame(gameID);
+            connection.observeGame(gameID);
             sessionData.setCurrentGameID(gameID);
+            GameData gameData = sessionData.getGameFromCache(gameID);
             if(gameData == null){
                 return "Game not observed";
             }
@@ -233,16 +233,21 @@ public class RequestHandler {
         try {
             Collection<GameData> games = connection.getGameList();
             sessionData.setGames(games);
-            return "Games";
+            return "Games:\n" + gameCollectionToString(games);
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
 
     }
 
-    private String validGameCheck(String gameID){
+    private String gameCollectionToString(Collection<GameData> games){
+        return games.stream().map((g -> g.gameName() +":\n"
+                + "    ID: " + g.gameID() + "\n"
+                + "    Black: " + g.blackUsername() + "\n"
+                + "    White: " + g.whiteUsername() + "\n"
 
-        return null;
+        )).collect(Collectors.joining());
+
     }
 
 }

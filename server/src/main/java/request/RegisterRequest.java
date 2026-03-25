@@ -1,6 +1,6 @@
-package requestresult;
+package request;
 
-import requestresult.interfaces.NullCheckable;
+import request.interfaces.NullCheckable;
 
 public record RegisterRequest(String username, String password, String email) implements NullCheckable {
     public boolean containsNullField() {

@@ -20,7 +20,7 @@ public class UIChessBoardHelper {
         ChessPiece[][] boardData = chessGame.getBoard().getBoardData();
 
         boolean orientation = Color.equals(ChessGame.TeamColor.WHITE);
-        boolean tileBlack = !orientation;
+        boolean tileBlack = false;
 
         uiBoard.append(drawNumbers(orientation));
         uiBoard.append("\n");
@@ -29,7 +29,7 @@ public class UIChessBoardHelper {
             yVal = orientation? 9-y:y;
             uiBoard.append(drawLetter(yVal));
             for(int x = 1; x<=8 ; x++){
-                xVal = orientation?9-x:x;
+                xVal = orientation?x:9-x;
                 String piece = chessPieceToCharacter(board.getPiece(new ChessPosition(yVal,xVal)));
                 uiBoard.append(tileBlack?EscapeSequences.SET_BG_COLOR_YELLOW:EscapeSequences.SET_BG_COLOR_WHITE);
                 tileBlack = !tileBlack;

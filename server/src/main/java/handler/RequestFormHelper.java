@@ -2,7 +2,7 @@ package handler;
 
 import io.javalin.http.Context;
 import org.jetbrains.annotations.NotNull;
-import requestresult.interfaces.NullCheckable;
+import request.interfaces.NullCheckable;
 import util.Constants;
 
 public class RequestFormHelper {

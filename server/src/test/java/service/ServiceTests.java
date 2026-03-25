@@ -7,7 +7,7 @@ import model.GameData;
 import model.UserData;
 import model.endpointresults.*;
 import org.junit.jupiter.api.*;
-import requestresult.*;
+import request.*;
 import util.Constants;
 import util.Util;
 

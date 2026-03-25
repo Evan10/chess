@@ -2,7 +2,7 @@ package handler;
 
 import com.google.gson.Gson;
 import model.AuthData;
-import requestresult.interfaces.Authorizable;
+import request.interfaces.Authorizable;
 
 public class JsonToRequestConverter<T> {
 

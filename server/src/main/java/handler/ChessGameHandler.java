@@ -5,7 +5,7 @@ import model.AuthData;
 import model.endpointresults.CreateGameResult;
 import model.endpointresults.JoinGameResult;
 import model.endpointresults.ListGamesResult;
-import requestresult.*;
+import request.*;
 import service.GameService;
 
 public class ChessGameHandler {

@@ -5,7 +5,7 @@ import model.AuthData;
 import model.endpointresults.LoginResult;
 import model.endpointresults.LogoutResult;
 import model.endpointresults.RegisterResult;
-import requestresult.*;
+import request.*;
 import service.UserService;
 
 public class UserHandler {

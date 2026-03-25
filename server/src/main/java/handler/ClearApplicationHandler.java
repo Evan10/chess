@@ -1,7 +1,7 @@
 package handler;
 
 import io.javalin.http.Context;
-import requestresult.ClearApplicationRequest;
+import request.ClearApplicationRequest;
 import model.endpointresults.ClearApplicationResult;
 import service.ClearApplicationService;
 

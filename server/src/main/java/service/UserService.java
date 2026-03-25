@@ -10,7 +10,7 @@ import model.endpointresults.LoginResult;
 import model.endpointresults.LogoutResult;
 import model.endpointresults.RegisterResult;
 import org.mindrot.jbcrypt.BCrypt;
-import requestresult.*;
+import request.*;
 import util.Constants;
 import util.Util;
 

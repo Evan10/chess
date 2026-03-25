@@ -1,8 +1,8 @@
-package requestresult;
+package request;
 
 import model.AuthData;
-import requestresult.interfaces.Authorizable;
-import requestresult.interfaces.NullCheckable;
+import request.interfaces.Authorizable;
+import request.interfaces.NullCheckable;
 
 public record CreateGameRequest(String gameName,
                                 AuthData authData) implements NullCheckable, Authorizable<CreateGameRequest> {

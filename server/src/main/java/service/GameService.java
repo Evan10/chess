@@ -11,7 +11,7 @@ import model.endpointresults.CreateGameResult;
 import model.endpointresults.JoinGameResult;
 import model.endpointresults.ListGamesResult;
 import org.jetbrains.annotations.NotNull;
-import requestresult.*;
+import request.*;
 import util.Util;
 
 import static util.Constants.*;

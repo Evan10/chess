@@ -1,6 +1,6 @@
-package requestresult;
+package request;
 
-import requestresult.interfaces.NullCheckable;
+import request.interfaces.NullCheckable;
 
 public record ClearApplicationRequest() implements NullCheckable {
     public boolean containsNullField() {
