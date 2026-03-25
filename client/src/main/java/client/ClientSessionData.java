@@ -44,6 +44,16 @@ public class ClientSessionData {
         return false;
     }
 
+    public GameData getGameFromCache(String gameID){
+        if(games == null) return null;
+        for(GameData g : games){
+            if(g.gameID().equals(gameID)){
+                return g;
+            }
+        }
+        return null;
+    }
+
     public void setGames(Collection<GameData> games) {
         this.games = games;
     }

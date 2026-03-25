@@ -10,15 +10,16 @@ public class UIChessBoardHelper {
 
     public static void main(String[] args){
         ChessGame chessGame = new ChessGame();
-        System.out.printf(uiChessBoard(chessGame,true));
+        System.out.printf(uiChessBoard(chessGame,ChessGame.TeamColor.WHITE));
     }
 
 
-    public static String uiChessBoard(ChessGame chessGame, boolean orientation){
+    public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor Color){
         StringBuilder uiBoard = new StringBuilder();
         ChessBoard board = chessGame.getBoard();
         ChessPiece[][] boardData = chessGame.getBoard().getBoardData();
 
+        boolean orientation = Color.equals(ChessGame.TeamColor.WHITE);
         boolean tileBlack = !orientation;
 
         uiBoard.append(drawNumbers(orientation));

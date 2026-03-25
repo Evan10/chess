@@ -3,6 +3,7 @@ package client;
 import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
+import ui.UIChessBoardHelper;
 
 import java.util.Collection;
 
@@ -188,12 +189,11 @@ public class RequestHandler {
             return GAME_NOT_FOUND_MESSAGE;
         }
         try {
-            GameData gameData = connection.joinGame(gameID,team);
+            connection.joinGame(gameID,team);
+            GameData gameData = sessionData.getGameFromCache(gameID);
             sessionData.setCurrentGame(gameData);
-            if(gameData == null){
-                return "Game not joined";
-            }
-            return "Joined game: " + gameData.gameName();
+            return "Joined game: " + gameData.gameName() + "\n"
+                    + UIChessBoardHelper.uiChessBoard(gameData.game(), team);
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
@@ -219,7 +219,8 @@ public class RequestHandler {
             if(gameData == null){
                 return "Game not observed";
             }
-            return "Observing game: " + gameData.gameName();
+            return "Observing game: " + gameData.gameName() + "\n"
+                    + UIChessBoardHelper.uiChessBoard(gameData.game(), ChessGame.TeamColor.WHITE);
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }

@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import model.AuthData;
 import model.GameData;
+import model.endpointresults.JoinGameResult;
 import model.endpointresults.ListGamesResult;
 import model.endpointresults.LoginResult;
 import model.endpointresults.RegisterResult;
@@ -109,13 +110,27 @@ public class ServerFacade {
         return null;
     }
 
-    GameData joinGame(String gameID, ChessGame.TeamColor color) throws FailResponseCodeException{
-        withAuth(requestHelper("game"));
-        return null;
+    void joinGame(String gameID, ChessGame.TeamColor color) throws FailResponseCodeException{
+        String jsonBody = jsonConverter.toJson(Map.of
+                ("gameID", gameID, "team", color.name()));
+        HttpRequest req =withAuth(requestHelper("game"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+        try {
+            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            if(res.statusCode()!= 200){
+                throw interpretErrorCode(res.statusCode());
+            }
+            JoinGameResult result = jsonConverter.fromJson(res.body(), JoinGameResult.class);
+        } catch (IOException | InterruptedException e){
+            throw new RuntimeException("Server is not running");
+        }
     }
 
     GameData observeGame(String gameID) throws FailResponseCodeException{
-        withAuth(requestHelper("game"));
+        String jsonBody = jsonConverter.toJson(Map.of
+                ("gameID", gameID));
+        //works with websockets
         return null;
     }
 
