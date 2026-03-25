@@ -31,6 +31,7 @@ public class UIChessBoardHelper {
                 uiBoard.append(piece);
             }
             uiBoard.append(drawLetter(yVal));
+            uiBoard.append("\n");
             tileBlack = !tileBlack;
             uiBoard.append(resetAll());
         }
@@ -76,8 +77,9 @@ public class UIChessBoardHelper {
                 + EscapeSequences.SET_TEXT_COLOR_WHITE
                 + EscapeSequences.SET_TEXT_BOLD
                 + EscapeSequences.EMPTY
-                + (orientation ? " 1  2   3   4  5   6  7   8\n":" 8  7   6   5  4   3  2   1\n")
+                + (orientation ? " 1  2   3   4  5   6  7   8":" 8  7   6   5  4   3  2   1")
                 + EscapeSequences.EMPTY
+                +"\n"
                 + resetAll();
     }
 

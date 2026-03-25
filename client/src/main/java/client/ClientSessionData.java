@@ -4,15 +4,26 @@ import model.AuthData;
 import model.GameData;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientSessionData {
 
     private ClientState state;
     private AuthData authData;
 
-    private Collection<GameData> games;
+
+    private final Map<String,Integer> gameIDPositionMap;
+    private final Map<Integer, GameData> positionGameDataMap;
+
+    private static int nextPosition = 0;
     private String currentGameID;
     private GameData currentGame;
+
+    ClientSessionData(){
+        gameIDPositionMap = new HashMap<>();
+        positionGameDataMap = new HashMap<>();
+    }
 
     public ClientState getState() {
         return state;
@@ -30,36 +41,33 @@ public class ClientSessionData {
         this.authData = authData;
     }
 
-    public Collection<GameData> getGames() {
-        return games;
+    public Map<Integer, GameData> getGames() {
+        return positionGameDataMap;
     }
 
-    public boolean isValidGame(String gameID){
-        if(games == null){
-            return false;
-        }
-        for(GameData g : games){
-            if(g.gameID().equals(gameID)){
-                return true;
+    public String getGameIDFromPosition(int position){
+        return positionGameDataMap.get(position).gameID();
+    }
+
+    public boolean isValidGame(int position){
+        return positionGameDataMap.containsKey(position);
+    }
+
+    public GameData getGameFromCache(int position){
+        return positionGameDataMap.getOrDefault(position, null);
+    }
+
+    public void addGames(Collection<GameData> games) {
+        for(GameData g: games){
+            int position;
+            if(!gameIDPositionMap.containsKey(g.gameID())){
+                position = getNextPosition();
+                gameIDPositionMap.put(g.gameID(),position);
+            }else {
+                position = gameIDPositionMap.get(g.gameID());
             }
+            positionGameDataMap.put(position, g);
         }
-        return false;
-    }
-
-    public GameData getGameFromCache(String gameID){
-        if(games == null) {
-            return null;
-        }
-        for(GameData g : games){
-            if(g.gameID().equals(gameID)){
-                return g;
-            }
-        }
-        return null;
-    }
-
-    public void setGames(Collection<GameData> games) {
-        this.games = games;
     }
 
     public GameData getCurrentGame() {
@@ -76,5 +84,9 @@ public class ClientSessionData {
     }
     public void setCurrentGameID(String gameID){
         this.currentGameID = gameID;
+    }
+
+    public int getNextPosition(){
+        return nextPosition++;
     }
 }

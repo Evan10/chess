@@ -6,6 +6,7 @@ import model.GameData;
 import ui.UIChessBoardHelper;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static client.ClientCommands.*;
@@ -66,8 +67,8 @@ public class RequestHandler {
             return """
                     create <Name> - create a chess game
                     list - all chess games
-                    join <GameID> [BLACK|WHITE]
-                    observe <GameID> - a chess game
+                    join <GamePosition> [BLACK|WHITE]
+                    observe <GamePosition> - a chess game
                     logout - of chess client
                     quit - chess client
                     help - commands
@@ -154,8 +155,8 @@ public class RequestHandler {
         }
         String name = args[1];
         try {
-            String gameID = connection.createGame(name);
-            return "Game created with ID: " + gameID;
+            connection.createGame(name);
+            return "Game created with name: " + name;
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
@@ -169,28 +170,29 @@ public class RequestHandler {
             return """
                     Invalid join command\s
                     Must be of format:\s
-                        join <GameID> [BLACK|WHITE]""";
+                        join <GamePosition> [BLACK|WHITE]""";
         }
-        String gameID = args[1];
+        int gamePos = Integer.parseInt(args[1]);
         ChessGame.TeamColor team;
         try{
             team = stringToTeamColor(args[2]);
         }catch (IllegalArgumentException e){
             return "Invalid color provided must be \"Black\" or \"White\"";
         }
-        if(!sessionData.isValidGame(gameID)){
+        if(!sessionData.isValidGame(gamePos)){
             return """
                      Game was not found in local cache; try using the command:
                         list
                      To list the game
                      """;
         }
-        if(!sessionData.isValidGame(gameID)){
+        if(!sessionData.isValidGame(gamePos)){
             return GAME_NOT_FOUND_MESSAGE;
         }
         try {
+            String gameID = sessionData.getGameIDFromPosition(gamePos);
             connection.joinGame(gameID,team);
-            GameData gameData = sessionData.getGameFromCache(gameID);
+            GameData gameData = sessionData.getGameFromCache(gamePos);
             sessionData.setCurrentGame(gameData);
             return "Joined game: " + gameData.gameName() + "\n"
                     + UIChessBoardHelper.uiChessBoard(gameData.game(), team);
@@ -207,16 +209,17 @@ public class RequestHandler {
             return """
                     Invalid observe command\s
                     Must be of format:\s
-                        observe <GameID>""";
+                        observe <GamePosition>""";
         }
-        String gameID = args[1];
-        if(!sessionData.isValidGame(gameID)){
+        int gamePos = Integer.parseInt(args[1]);
+        if(!sessionData.isValidGame(gamePos)){
             return GAME_NOT_FOUND_MESSAGE;
         }
         try {
+            String gameID = sessionData.getGameIDFromPosition(gamePos);
             connection.observeGame(gameID);
             sessionData.setCurrentGameID(gameID);
-            GameData gameData = sessionData.getGameFromCache(gameID);
+            GameData gameData = sessionData.getGameFromCache(gamePos);
             if(gameData == null){
                 return "Game not observed";
             }
@@ -233,19 +236,20 @@ public class RequestHandler {
         }
         try {
             Collection<GameData> games = connection.getGameList();
-            sessionData.setGames(games);
-            return "Games:\n" + gameCollectionToString(games);
+            sessionData.addGames(games);
+            return "Games:\n" + gameCollectionToString(sessionData.getGames());
         } catch (FailResponseCodeException e) {
             return e.getMessage();
         }
 
     }
 
-    private String gameCollectionToString(Collection<GameData> games){
-        return games.stream().map((g -> g.gameName() +":\n"
-                + "    ID: " + g.gameID() + "\n"
-                + "    Black: " + g.blackUsername() + "\n"
-                + "    White: " + g.whiteUsername() + "\n"
+    private String gameCollectionToString(Map<Integer,GameData> games){
+        return games.entrySet().stream().map((g ->
+                g.getValue().gameName() +":\n"
+                + "    Position: " + g.getKey() + "\n"
+                + "    Black: " + g.getValue().blackUsername() + "\n"
+                + "    White: " + g.getValue().whiteUsername() + "\n"
 
         )).collect(Collectors.joining());
 
