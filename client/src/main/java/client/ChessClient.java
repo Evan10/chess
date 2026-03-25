@@ -15,7 +15,7 @@ public class ChessClient {
         sessionData = new ClientSessionData();
         sessionData.setState(ClientState.LOGGED_OUT);
 
-        serverConnection = new ServerFacade(host,8080);
+        serverConnection = new ServerFacade(host,8080, sessionData);
         requestHandler = new RequestHandler(serverConnection, sessionData);
         running = true;
         run();

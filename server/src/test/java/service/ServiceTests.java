@@ -5,6 +5,7 @@ import dataaccess.exception.DataAccessException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import model.endpointresults.*;
 import org.junit.jupiter.api.*;
 import requestresult.*;
 import util.Constants;

@@ -1,4 +1,4 @@
-package requestresult;
+package model.endpointresults;
 
 public record RegisterResult(int responseCode, String message, String username, String authToken) {
     public RegisterResult(int responseCode, String message) {

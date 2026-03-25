@@ -13,6 +13,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
+
     private ChessPiece[][] board;
 
     public ChessBoard() {
@@ -125,6 +126,11 @@ public class ChessBoard {
         ChessBoard that = (ChessBoard) o;
         return Objects.deepEquals(board, that.board);
     }
+
+    public ChessPiece[][] getBoardData() {
+        return board;
+    }
+
 
     @Override
     public int hashCode() {

@@ -2,6 +2,9 @@ package handler;
 
 import io.javalin.http.Context;
 import model.AuthData;
+import model.endpointresults.LoginResult;
+import model.endpointresults.LogoutResult;
+import model.endpointresults.RegisterResult;
 import requestresult.*;
 import service.UserService;
 

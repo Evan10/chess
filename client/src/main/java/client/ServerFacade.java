@@ -5,32 +5,42 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import model.AuthData;
 import model.GameData;
+import model.endpointresults.ListGamesResult;
+import model.endpointresults.LoginResult;
+import model.endpointresults.RegisterResult;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class ServerFacade {
 
 
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final CookieManager cookieManager = new CookieManager();
+    static {
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+    }
+    private static final HttpClient client = HttpClient.newBuilder().cookieHandler(cookieManager).build();
     private static final Gson jsonConverter = new Gson();
 
     private final String url;
 
-    public ServerFacade(String host, int port){
+    private final ClientSessionData sessionData;
+
+    public ServerFacade(String host, int port, ClientSessionData sessionData){
         url = String.format(Locale.getDefault(),"http://%s:%d",host,port);
+        this.sessionData=sessionData;
     }
 
     void logout() throws FailResponseCodeException{
-        HttpRequest req = requestHelper("session").DELETE().build();
+        HttpRequest req = withAuth(requestHelper("session")).DELETE().build();
         try {
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             if(res.statusCode() == 401){
@@ -48,10 +58,11 @@ public class ServerFacade {
                 .build();
         try {
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            if(res.statusCode()==404){
-                throw new FailResponseCodeException("Username or password was incorrect");
+            if(res.statusCode()!= 200){
+                throw interpretErrorCode(res.statusCode());
             }
-            return jsonConverter.fromJson(res.body(),AuthData.class);
+            LoginResult result = jsonConverter.fromJson(res.body(),LoginResult.class);
+            return new AuthData(result.authToken(),result.username());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Server is not running");
         }
@@ -67,12 +78,11 @@ public class ServerFacade {
                 .build();
         try{
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
-            if(res.statusCode() == 400){
-                throw new FailResponseCodeException("Bad request");
-            }else if(res.statusCode() !=200){
-                throw new FailResponseCodeException("Username is not available");
+            if(res.statusCode()!= 200){
+                throw interpretErrorCode(res.statusCode());
             }
-            return jsonConverter.fromJson(res.body(),AuthData.class);
+            RegisterResult result = jsonConverter.fromJson(res.body(), RegisterResult.class);
+            return new AuthData(result.authToken(),result.username());
         }catch (IOException | InterruptedException e){
             throw new RuntimeException("Server is not running");
         }
@@ -80,35 +90,32 @@ public class ServerFacade {
     }
 
     Collection<GameData> getGameList() throws FailResponseCodeException{
-        HttpRequest req = requestHelper("game").GET().build();
+        HttpRequest req = withAuth(requestHelper("game")).GET().build();
 
         try {
             HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
             if(res.statusCode()!= 200){
-                throw FailResponseCodeException("")
+                throw interpretErrorCode(res.statusCode());
             }
-            Type type =  new TypeToken<Map<String, String>>(){}.getType();
-            Map<String, String> body = jsonConverter.fromJson(res.body(), type);
-
-
+            ListGamesResult result = jsonConverter.fromJson(res.body(), ListGamesResult.class);
+            return result.games();
         } catch (IOException | InterruptedException e){
             throw new RuntimeException("Server is not running");
         }
-        return null;
     }
 
     GameData createGame(String name) throws FailResponseCodeException{
-        requestHelper("game");
+        withAuth(requestHelper("game"));
         return null;
     }
 
     GameData joinGame(String gameID, ChessGame.TeamColor color) throws FailResponseCodeException{
-        requestHelper("game");
+        withAuth(requestHelper("game"));
         return null;
     }
 
     GameData observeGame(String gameID) throws FailResponseCodeException{
-        requestHelper("game");
+        withAuth(requestHelper("game"));
         return null;
     }
 
@@ -126,5 +133,21 @@ public class ServerFacade {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+    private HttpRequest.Builder withAuth(HttpRequest.Builder builder){
+        AuthData authData =sessionData.getAuthData();
+        if(authData == null) return builder;
+        return builder.header("Authorization",authData.authToken());
+    }
+
+
+    private FailResponseCodeException interpretErrorCode(int code){
+        return switch (code){
+            case 400 -> new FailResponseCodeException("Bad request");
+            case 401 -> new FailResponseCodeException("Not signed in");
+            case 403 -> new FailResponseCodeException("Already in use");
+            case 500 -> new FailResponseCodeException("Server error");
+            default -> new FailResponseCodeException("Unknown Error");
+        };
     }
 }

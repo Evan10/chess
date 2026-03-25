@@ -3,7 +3,7 @@ package service;
 import dataaccess.DAO;
 import dataaccess.exception.DataAccessException;
 import requestresult.ClearApplicationRequest;
-import requestresult.ClearApplicationResult;
+import model.endpointresults.ClearApplicationResult;
 import util.Constants;
 
 import java.util.Collection;

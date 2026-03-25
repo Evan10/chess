@@ -3,10 +3,6 @@ package client;
 import chess.ChessGame;
 
 public class ClientUtils {
-    public static String buildConsoleChessboard(){
-        return "";
-    }
-
 
     public static ChessGame.TeamColor stringToTeamColor(String str) throws IllegalArgumentException{
         String team = str.toLowerCase();

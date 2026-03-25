@@ -2,6 +2,9 @@ package handler;
 
 import io.javalin.http.Context;
 import model.AuthData;
+import model.endpointresults.CreateGameResult;
+import model.endpointresults.JoinGameResult;
+import model.endpointresults.ListGamesResult;
 import requestresult.*;
 import service.GameService;
 

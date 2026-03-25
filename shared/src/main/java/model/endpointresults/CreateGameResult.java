@@ -1,4 +1,4 @@
-package requestresult;
+package model.endpointresults;
 
 public record CreateGameResult(int responseCode, String message, String gameID) {
     public CreateGameResult(int responseCode, String message) {
