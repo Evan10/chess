@@ -150,6 +150,9 @@ public class ServerFacade {
     GameData observeGame(String gameID) throws FailResponseCodeException{
         String jsonBody = jsonConverter.toJson(Map.of
                 ("gameID", gameID));
+        if(sessionData.getAuthData()== null){
+            throw new FailResponseCodeException("No auth");
+        }
         //works with websockets
         return null;
     }
@@ -176,13 +179,4 @@ public class ServerFacade {
     }
 
 
-    private FailResponseCodeException interpretErrorCode(int code){
-        return switch (code){
-            case 400 -> new FailResponseCodeException("Bad request");
-            case 401 -> new FailResponseCodeException("Not signed in");
-            case 403 -> new FailResponseCodeException("Already in use");
-            case 500 -> new FailResponseCodeException("Server error");
-            default -> new FailResponseCodeException("Unknown Error");
-        };
-    }
 }

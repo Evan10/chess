@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -150,7 +151,7 @@ public class ServerFacadeTests {
         try {
             sessionData.setAuthData(facade.register(username, password, "Test"));
             String gameID = facade.createGame("GameName");
-
+            Assertions.assertDoesNotThrow(()->facade.joinGame(gameID, ChessGame.TeamColor.WHITE));
         } catch (FailResponseCodeException e) {
             Assertions.fail(e);
         }
@@ -158,17 +159,44 @@ public class ServerFacadeTests {
 
     @Test
     public void shouldFailJoinGameWhenSpotTaken(){
-
+        String username= "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username, password, "Test"));
+            String gameID = facade.createGame("GameName");
+            Assertions.assertDoesNotThrow(()->facade.joinGame(gameID, ChessGame.TeamColor.WHITE));
+            Assertions.assertThrows(FailResponseCodeException.class,
+                    ()->facade.joinGame(gameID, ChessGame.TeamColor.WHITE));
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
     }
 
     @Test
-    public void shouldObserveGameWhenHasAuth(){
-
+    public void shouldObserveGameWhenHasAuth() {
+        String username = "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username, password, "Test"));
+            String gameID = facade.createGame("GameName");
+            Assertions.assertDoesNotThrow(() -> facade.observeGame(gameID));
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
     }
 
     @Test
     public void shouldFailObserveGameWhenNoAuth(){
-
+        String username = "Test";
+        String password = "Test";
+        try {
+            sessionData.setAuthData(facade.register(username, password, "Test"));
+            String gameID = facade.createGame("GameName");
+            sessionData.setAuthData(null);
+            Assertions.assertThrows(FailResponseCodeException.class,() -> facade.observeGame(gameID));
+        } catch (FailResponseCodeException e) {
+            Assertions.fail(e);
+        }
     }
 
 
