@@ -80,7 +80,8 @@ public class RequestHandler {
         if(sessionData.getState() == LOGGED_IN) {
             try {
                 connection.logout();
-            } catch (FailResponseCodeException _) {
+            } catch (FailResponseCodeException e) {
+                return e.getMessage();
             }
         }
         return "quit";
