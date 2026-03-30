@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 
@@ -18,6 +19,9 @@ public class ClientSessionData {
 
     private static int nextPosition = 0;
     private String currentGameID;
+
+
+    private ChessGame.TeamColor color = ChessGame.TeamColor.WHITE; // default to white for observing games
     private GameData currentGame;
 
     ClientSessionData(){
@@ -88,5 +92,13 @@ public class ClientSessionData {
 
     public int getNextPosition(){
         return nextPosition++;
+    }
+
+    public ChessGame.TeamColor getColor() {
+        return color;
+    }
+
+    public void setColor(ChessGame.TeamColor color) {
+        this.color = color;
     }
 }

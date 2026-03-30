@@ -26,17 +26,23 @@ public class RequestHandler {
                      """;
     private final ServerFacade connection;
     private final ClientSessionData sessionData;
-    RequestHandler(ServerFacade connection, ClientSessionData sessionData){
+    private final ConsoleWriter consoleWriter;
+    RequestHandler(ServerFacade connection, ClientSessionData sessionData, ConsoleWriter consoleWriter){
         this.connection=connection;
         this.sessionData=sessionData;
+        this.consoleWriter=consoleWriter;
     }
 
-    public String handle(String message){
+    public boolean handle(String message){
         String[] parts = message.split(" ");
         String command = parts[0].toLowerCase();
-        return switch (command){
+        boolean quit = false;
+        switch (command){
             case HELP -> handleHelp();
-            case QUIT -> handleQuit();
+            case QUIT -> {
+                handleQuit();
+                quit = true;
+            }
             case LOGIN -> handleLogin(parts);
             case REGISTER -> handleRegister(parts);
             case LOGOUT -> handleLogout();
@@ -46,25 +52,27 @@ public class RequestHandler {
             case OBSERVE_GAME -> handleObserveGame(parts);
             default -> handleUnknown();
         };
+        return quit;
     }
 
 
 
-    private String handleUnknown(){
-        return "Unknown command; Please use a valid command \n" + handleHelp();
+    private void handleUnknown(){
+        consoleWriter.writeErrorMessage("Unknown command; Please use a valid command \n");
+        handleHelp();
     }
 
 
-    private String handleHelp(){
+    private void handleHelp(){
         if(sessionData.getState() == LOGGED_OUT){
-            return """
+            consoleWriter.writeMessage("""
                     register <Username> <Password> <Email> - create an account
                     login <Username> <Password> - to play chess
                     quit - chess client
                     help - commands
-                    """;
+                    """);
         }else{
-            return """
+            consoleWriter.writeMessage("""
                     create <Name> - create a chess game
                     list - all chess games
                     join <GamePosition> [BLACK|WHITE]
@@ -72,43 +80,46 @@ public class RequestHandler {
                     logout - of chess client
                     quit - chess client
                     help - commands
-                    """;
+                    """);
         }
 
     }
 
-    private String handleQuit(){
+    private void handleQuit(){
         if(sessionData.getState() == LOGGED_IN) {
             try {
                 connection.logout();
             } catch (FailResponseCodeException e) {
-                return e.getMessage();
+                consoleWriter.writeErrorMessage(e.getMessage());
             }
         }
-        return "quit";
     }
 
-    private String handleLogout(){
+    private void handleLogout(){
         if(sessionData.getState() == LOGGED_OUT){
-            return NOT_LOGGED_IN_MESSAGE;
+            consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+            return;
         }
         try {
             connection.logout();
             sessionData.setAuthData(null);
+            consoleWriter.setPrefix(LOGGED_OUT.name);
             sessionData.setState(LOGGED_OUT);
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
+            return;
         }
 
-        return "User logged out";
+        consoleWriter.writeMessage("User logged out");
     }
 
-    private String handleLogin(String[] args){
+    private void handleLogin(String[] args){
         if(args.length != 3){
-            return """
-                    Invalid login command\s
+            consoleWriter.writeErrorMessage("Invalid login command");
+            consoleWriter.writeMessage("""
                     Must be of format:\s
-                        login <username> <password>""";
+                        login <username> <password>""");
+            return;
         }
         String username = args[1];
         String password = args[2];
@@ -116,18 +127,20 @@ public class RequestHandler {
             AuthData authData = connection.login(username, password);
             sessionData.setAuthData(authData);
             sessionData.setState(LOGGED_IN);
-            return String.format("Welcome %s!",authData.username());
+            consoleWriter.setPrefix(authData.username());
+            consoleWriter.writeMessage(String.format("Welcome %s!",authData.username()));
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
     }
 
-    private String handleRegister(String[] args){
+    private void handleRegister(String[] args){
         if(args.length != 4){
-            return """
-                    Invalid register command\s
+            consoleWriter.writeErrorMessage("Invalid register command");
+            consoleWriter.writeMessage("""
                     Must be of format:\s
-                        register <username> <password> <email>""";
+                        register <username> <password> <email>""");
+            return;
         }
         String username = args[1];
         String password = args[2];
@@ -136,84 +149,88 @@ public class RequestHandler {
             AuthData authData= connection.register(username,password,email);
             sessionData.setAuthData(authData);
             sessionData.setState(LOGGED_IN);
-            return authData.username() +" registered";
+            consoleWriter.setPrefix(authData.username());
+            consoleWriter.writeMessage(authData.username() +" registered");
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
     }
 
 
-    private String handleCreateGame(String[] args){
+    private void handleCreateGame(String[] args){
         if(sessionData.getState() == LOGGED_OUT){
-            return NOT_LOGGED_IN_MESSAGE;
+            consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+            return;
         }
         if(args.length != 2){
-            return """
-                    Invalid create command\s
+            consoleWriter.writeErrorMessage("Invalid join command");
+            consoleWriter.writeMessage("""
                     Must be of format:\s
-                        create <Name>""";
+                        create <Name>""");
+            return;
         }
         String name = args[1];
         try {
             connection.createGame(name);
-            return "Game created with name: " + name;
+            consoleWriter.writeMessage("Game created with name: " + name);
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
     }
 
-    private String handleJoinGame(String[] args){
+    private void handleJoinGame(String[] args){
         if(sessionData.getState() == LOGGED_OUT){
-            return NOT_LOGGED_IN_MESSAGE;
+            consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+            return;
         }
         if(args.length != 3){
-            return """
-                    Invalid join command\s
+            consoleWriter.writeErrorMessage("Invalid join command");
+            consoleWriter.writeMessage("""
                     Must be of format:\s
-                        join <GamePosition> [BLACK|WHITE]""";
+                        join <GamePosition> [BLACK|WHITE]""");
+            return;
         }
         int gamePos = Integer.parseInt(args[1]);
         ChessGame.TeamColor team;
         try{
             team = stringToTeamColor(args[2]);
         }catch (IllegalArgumentException e){
-            return "Invalid color provided must be \"Black\" or \"White\"";
+            consoleWriter.writeErrorMessage("Invalid color provided must be \"Black\" or \"White\"");
+            return;
         }
         if(!sessionData.isValidGame(gamePos)){
-            return """
-                     Game was not found in local cache; try using the command:
-                        list
-                     To list the game
-                     """;
-        }
-        if(!sessionData.isValidGame(gamePos)){
-            return GAME_NOT_FOUND_MESSAGE;
+            consoleWriter.writeMessage(GAME_NOT_FOUND_MESSAGE);
+            return;
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
             connection.joinGame(gameID,team);
             GameData gameData = sessionData.getGameFromCache(gamePos);
             sessionData.setCurrentGame(gameData);
-            return "Joined game: " + gameData.gameName() + "\n"
-                    + UIChessBoardHelper.uiChessBoard(gameData.game(), team);
+            sessionData.setColor(team);
+            consoleWriter.writeMessage(String.format("Joined game %s:",gameData.gameName()));
+            consoleWriter.writeBoard(gameData.game());
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
     }
 
-    private String handleObserveGame(String[] args){
+    private void handleObserveGame(String[] args){
         if(sessionData.getState() == LOGGED_OUT){
-            return NOT_LOGGED_IN_MESSAGE;
+             consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+             return;
         }
         if(args.length != 2){
-            return """
+            consoleWriter.writeMessage("""
                     Invalid observe command\s
                     Must be of format:\s
-                        observe <GamePosition>""";
+                        observe <GamePosition>""");
+            return;
         }
         int gamePos = Integer.parseInt(args[1]);
         if(!sessionData.isValidGame(gamePos)){
-            return GAME_NOT_FOUND_MESSAGE;
+            consoleWriter.writeErrorMessage(GAME_NOT_FOUND_MESSAGE);
+            return;
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
@@ -221,38 +238,30 @@ public class RequestHandler {
             sessionData.setCurrentGameID(gameID);
             GameData gameData = sessionData.getGameFromCache(gamePos);
             if(gameData == null){
-                return "Game not observed";
+                consoleWriter.writeErrorMessage("Game not observed");
+                return;
             }
-            return "Observing game: " + gameData.gameName() + "\n"
-                    + UIChessBoardHelper.uiChessBoard(gameData.game(), ChessGame.TeamColor.WHITE);
+            consoleWriter.writeMessage("Observing game: " + gameData.gameName());
+            consoleWriter.writeBoard(gameData.game());
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
     }
 
-    private String handleListGames(){
+    private void handleListGames(){
         if(sessionData.getState() == LOGGED_OUT){
-            return NOT_LOGGED_IN_MESSAGE;
+            consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+            return;
         }
         try {
             Collection<GameData> games = connection.getGameList();
             sessionData.addGames(games);
-            return "Games:\n" + gameCollectionToString(sessionData.getGames());
+            consoleWriter.writeGameList(sessionData.getGames());
         } catch (FailResponseCodeException e) {
-            return e.getMessage();
+            consoleWriter.writeErrorMessage(e.getMessage());
         }
 
     }
 
-    private String gameCollectionToString(Map<Integer,GameData> games){
-        return games.entrySet().stream().map((g ->
-                g.getValue().gameName() +":\n"
-                + "    Position: " + g.getKey() + "\n"
-                + "    Black: " + g.getValue().blackUsername() + "\n"
-                + "    White: " + g.getValue().whiteUsername() + "\n"
-
-        )).collect(Collectors.joining());
-
-    }
 
 }

@@ -9,13 +9,15 @@ public class ChessClient {
     RequestHandler requestHandler;
     public ClientSessionData sessionData;
     private final ServerFacade serverConnection;
+    private final ConsoleWriter consoleWriter;
 
     public ChessClient(String host){
         sessionData = new ClientSessionData();
         sessionData.setState(ClientState.LOGGED_OUT);
 
+        consoleWriter = new ConsoleWriter(sessionData);
         serverConnection = new ServerFacade(host,8080, sessionData);
-        requestHandler = new RequestHandler(serverConnection, sessionData);
+        requestHandler = new RequestHandler(serverConnection, sessionData, consoleWriter);
         running = true;
         run();
     }
@@ -24,27 +26,17 @@ public class ChessClient {
     private void run(){
         Scanner input = new Scanner(System.in);
         String value;
-        System.out.println("Welcome To Chess Client! Type help to start");
-        printNewCommandLine();
+        consoleWriter.writeAndFlushInitMessage();
         while(running){
             value = input.nextLine();
-            String output = requestHandler.handle(value);
-            if(output.equals("quit")) {
+            boolean quit = requestHandler.handle(value);
+            if(quit) {
                 running = false;
                 continue;
             }
-            System.out.printf(output +"\n");
-            printNewCommandLine();
+            consoleWriter.flushToConsole();
         }
         serverConnection.close();
-    }
-
-    private void printNewCommandLine(){
-        System.out.printf(EscapeSequences.RESET_BG_COLOR +
-                EscapeSequences.RESET_TEXT_COLOR +
-                EscapeSequences.RESET_TEXT_UNDERLINE +
-                EscapeSequences.RESET_TEXT_BOLD_FAINT+
-                sessionData.getState().name +" >>");
     }
 
 
