@@ -74,6 +74,9 @@ public class ClientSessionData {
         }
     }
 
+    public boolean isInGame(){
+        return currentGame != null;
+    }
     public GameData getCurrentGame() {
         return currentGame;
     }
@@ -100,5 +103,16 @@ public class ClientSessionData {
 
     public void setColor(ChessGame.TeamColor color) {
         this.color = color;
+    }
+
+    public void clearSessionData(){
+        state = ClientState.LOGGED_OUT;
+        authData = null;
+        gameIDPositionMap.clear();
+        positionGameDataMap.clear();
+        nextPosition = 0;
+        currentGameID = null;
+        ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
+        currentGame = null;
     }
 }

@@ -1,32 +1,43 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class UIChessBoardHelper {
 
     public static void main(String[] args){
         ChessGame chessGame = new ChessGame();
-        System.out.printf(uiChessBoard(chessGame,ChessGame.TeamColor.WHITE));
+        System.out.printf(uiChessBoard(chessGame,ChessGame.TeamColor.WHITE,
+                chessGame.validMoves(new ChessPosition(2,7))));
     }
 
 
-    public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor color){
+    public static String uiChessBoard(ChessGame chessGame, ChessGame.TeamColor color, Collection<ChessMove> legalMoves){
         StringBuilder uiBoard = new StringBuilder();
         ChessBoard board = chessGame.getBoard();
         boolean orientation = color.equals(ChessGame.TeamColor.WHITE);
         boolean tileBlack = false;
         uiBoard.append(drawNumbers(orientation));
         int xVal, yVal;
+
+        ChessPosition start = legalMoves != null && legalMoves.iterator().hasNext()
+                ? legalMoves.iterator().next().getStartPosition()
+                : null;
         for(int y = 1; y<=8 ; y++){
             yVal = orientation? 9-y:y;
             uiBoard.append(drawLetter(yVal));
             for(int x = 1; x<=8 ; x++){
                 xVal = orientation?x:9-x;
-                String piece = chessPieceToCharacter(board.getPiece(new ChessPosition(yVal,xVal)));
-                uiBoard.append(tileBlack?EscapeSequences.SET_BG_COLOR_YELLOW:EscapeSequences.SET_BG_COLOR_WHITE);
+                ChessPosition position = new ChessPosition(yVal,xVal);
+                boolean legalMove = legalMoves != null && legalMoves.stream()
+                        .anyMatch((chessMove -> chessMove.getEndPosition()
+                                .equals(position)));
+                String piece = chessPieceToCharacter(board.getPiece(position));
+                boolean isStart = start!= null && start.equals(position);
+                uiBoard.append(setBGColor(isStart,legalMove,tileBlack));
                 tileBlack = !tileBlack;
                 uiBoard.append(piece);
             }
@@ -98,4 +109,14 @@ public class UIChessBoardHelper {
         };
     }
 
+
+    public static String setBGColor(boolean start,boolean legalMove, boolean isBlack){
+        if(start){
+            return EscapeSequences.SET_BG_COLOR_MAGENTA;
+        } else if(legalMove){
+            return EscapeSequences.SET_BG_COLOR_GREEN;
+        } else {
+            return isBlack ? EscapeSequences.SET_BG_COLOR_YELLOW : EscapeSequences.SET_BG_COLOR_WHITE;
+        }
+    }
 }

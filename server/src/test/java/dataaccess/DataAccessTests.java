@@ -396,7 +396,7 @@ public class DataAccessTests {
     public static void messWithChessBoard(ChessGame game) {
         game.toggleTeamTurn();
         try {
-            game.getBoard().movePiece(new ChessMove(
+            game.makeMove(new ChessMove(
                     new ChessPosition(2, 4)
                     , new ChessPosition(4, 4),
                     null));

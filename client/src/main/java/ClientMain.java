@@ -1,5 +1,8 @@
 import client.ChessClient;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 public class ClientMain {
 
@@ -9,7 +12,11 @@ public class ClientMain {
         if(args.length>0){
             host = args[0];
         }
-        new ChessClient(host);
+        try {
+            new ChessClient(new URI(host));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

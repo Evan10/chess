@@ -1,5 +1,6 @@
 package client;
 
+import com.google.gson.Gson;
 import jakarta.websocket.*;
 
 import java.awt.*;
@@ -9,7 +10,7 @@ import java.net.URISyntaxException;
 
 public class WsClient extends Endpoint {
     private final Session session;
-
+    private static final Gson serializer = new Gson();
     public WsClient(URI serverAddress, ClientMessageHandler messageHandler) throws URISyntaxException, DeploymentException, IOException {
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -19,6 +20,9 @@ public class WsClient extends Endpoint {
     }
 
 
+    public void send(Object message) throws IOException {
+        send(serializer.toJson(message));
+    }
     public void send(String message) throws IOException {
         session.getBasicRemote().sendText(message);
     }

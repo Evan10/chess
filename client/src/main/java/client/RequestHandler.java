@@ -4,7 +4,9 @@ import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import ui.UIChessBoardHelper;
+import websocket.commands.UserGameCommand;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -109,14 +111,12 @@ public class RequestHandler {
         }
         try {
             httpConnection.logout();
-            sessionData.setAuthData(null);
+            sessionData.clearSessionData();
             consoleWriter.setPrefix(LOGGED_OUT.name);
-            sessionData.setState(LOGGED_OUT);
         } catch (FailResponseCodeException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
             return;
         }
-
         consoleWriter.writeMessage("User logged out");
     }
 
@@ -212,6 +212,12 @@ public class RequestHandler {
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
             httpConnection.joinGame(gameID,team);
+
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+                    sessionData.getAuthData().authToken(),
+                    Integer.parseInt(gameID));
+            wsConnection.send(command);
+
             GameData gameData = sessionData.getGameFromCache(gamePos);
             sessionData.setCurrentGame(gameData);
             sessionData.setColor(team);
@@ -219,15 +225,17 @@ public class RequestHandler {
             consoleWriter.writeBoard(gameData.game());
         } catch (FailResponseCodeException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
+        }catch (IOException e){
+            consoleWriter.writeErrorMessage("Error: unable to connect websocket");
         }
     }
 
-    private void handleObserveGame(String[] args){
-        if(sessionData.getState() == LOGGED_OUT){
-             consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
-             return;
+    private void handleObserveGame(String[] args) {
+        if (sessionData.getState() == LOGGED_OUT) {
+            consoleWriter.writeErrorMessage(NOT_LOGGED_IN_MESSAGE);
+            return;
         }
-        if(args.length != 2){
+        if (args.length != 2) {
             consoleWriter.writeMessage("""
                     Invalid observe command\s
                     Must be of format:\s
@@ -235,23 +243,28 @@ public class RequestHandler {
             return;
         }
         int gamePos = Integer.parseInt(args[1]);
-        if(!sessionData.isValidGame(gamePos)){
+        if (!sessionData.isValidGame(gamePos)) {
             consoleWriter.writeErrorMessage(GAME_NOT_FOUND_MESSAGE);
             return;
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
-            httpConnection.observeGame(gameID);
+
+            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+                    sessionData.getAuthData().authToken(),
+                    Integer.parseInt(gameID));
+            wsConnection.send(command);
+
             sessionData.setCurrentGameID(gameID);
             GameData gameData = sessionData.getGameFromCache(gamePos);
-            if(gameData == null){
+            if (gameData == null) {
                 consoleWriter.writeErrorMessage("Game not observed");
                 return;
             }
             consoleWriter.writeMessage("Observing game: " + gameData.gameName());
             consoleWriter.writeBoard(gameData.game());
-        } catch (FailResponseCodeException e) {
-            consoleWriter.writeErrorMessage(e.getMessage());
+        } catch (IOException e) {
+            consoleWriter.writeErrorMessage("Error: unable to connect websocket");
         }
     }
 
@@ -267,6 +280,76 @@ public class RequestHandler {
         } catch (FailResponseCodeException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
         }
+
+    }
+
+
+    private void handleRedrawGame(){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+        }
+    }
+
+    private void handleLeaveGame(){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+        }
+    }
+
+    private void handleMakeMoveInGame(String[] args){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
+        } else if(!isPlayerInGame()){
+            consoleWriter.writeErrorMessage("Error: not a player");
+            return;
+        } else if(!canMakeMove()){
+            consoleWriter.writeErrorMessage("Error: not your turn");
+            return;
+        }
+    }
+
+    private void handleResignFromGame(){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
+        } else if(!isPlayerInGame()){
+            consoleWriter.writeErrorMessage("Error: not a player");
+            return;
+        }
+    }
+
+    private void handleHighlightMoves(){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+        }
+
+    }
+
+    private boolean canUseGameCommands(){
+        return sessionData.getState() == LOGGED_IN && sessionData.isInGame();
+    }
+
+    private boolean isPlayerInGame(){
+        AuthData authData = sessionData.getAuthData();
+        if(authData == null) {return false;}
+        String username = authData.username();
+        if(username == null) {return false;}
+        boolean isWhite = sessionData.getColor().equals(ChessGame.TeamColor.WHITE);
+        return  isWhite ?
+                sessionData.getCurrentGame().whiteUsername().equals(username):
+                sessionData.getCurrentGame().blackUsername().equals(username);
+    }
+
+    private boolean canMakeMove(){
+        ChessGame game = sessionData.getCurrentGame().game();
+        if(game == null){
+            return false;
+        }
+        return  isPlayerInGame()
+                && game.getTeamTurn().equals(sessionData.getColor())
+                && !game.isInCheckmate(sessionData.getColor())
+                && !game.isInStalemate(sessionData.getColor());
 
     }
 

@@ -27,7 +27,7 @@ public class ChessBoard {
     }
 
 
-    public void movePiece(ChessMove move) throws InvalidMoveException {
+    protected void movePiece(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = getPiece(move.getStartPosition());
         if (piece == null) {
             throw new InvalidMoveException("Invalid move, Piece not found");

@@ -1,10 +1,12 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import model.GameData;
 import org.glassfish.grizzly.http.server.SuspendContext;
 import ui.EscapeSequences;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,11 @@ public class ConsoleWriter {
     }
 
     public void writeBoard(ChessGame game){
-        messageQueue.append(uiChessBoard(game,sessionData.getColor()));
+        messageQueue.append(uiChessBoard(game,sessionData.getColor(), null));
+        messageQueue.append("\n");
+    }
+    public void writeBoard(ChessGame game, Collection<ChessMove> legalMoves){
+        messageQueue.append(uiChessBoard(game,sessionData.getColor(), legalMoves));
         messageQueue.append("\n");
     }
 

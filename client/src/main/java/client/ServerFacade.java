@@ -145,15 +145,6 @@ public class ServerFacade {
         }
     }
 
-    GameData observeGame(String gameID) throws FailResponseCodeException{
-        String jsonBody = JSON_CONVERTER.toJson(Map.of("gameID", gameID));
-        if(sessionData.getAuthData()== null && !jsonBody.isBlank()){
-
-            throw new FailResponseCodeException("No auth");
-        }
-        //works with websockets
-        return null;
-    }
 
     public void close(){
         CLIENT.close();
