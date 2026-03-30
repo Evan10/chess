@@ -24,11 +24,13 @@ public class RequestHandler {
                         list
                      To list the game
                      """;
-    private final ServerFacade connection;
+    private final ServerFacade httpConnection;
+    private final WsClient wsConnection;
     private final ClientSessionData sessionData;
     private final ConsoleWriter consoleWriter;
-    RequestHandler(ServerFacade connection, ClientSessionData sessionData, ConsoleWriter consoleWriter){
-        this.connection=connection;
+    RequestHandler(ServerFacade httpConnection,WsClient wsConnection, ClientSessionData sessionData, ConsoleWriter consoleWriter){
+        this.httpConnection=httpConnection;
+        this.wsConnection=wsConnection;
         this.sessionData=sessionData;
         this.consoleWriter=consoleWriter;
     }
@@ -50,6 +52,11 @@ public class RequestHandler {
             case LIST_GAMES -> handleListGames();
             case JOIN_GAME -> handleJoinGame(parts);
             case OBSERVE_GAME -> handleObserveGame(parts);
+            case REDRAW_GAME -> throw new RuntimeException("Redraw not implemented yet");
+            case LEAVE_GAME -> throw new RuntimeException("Leave not implemented yet");
+            case MAKE_MOVE -> throw new RuntimeException("Move not implemented yet");
+            case RESIGN_FROM_GAME -> throw new RuntimeException("Resign not implemented yet");
+            case HIGHLIGHT_MOVES -> throw new RuntimeException("Highlight not implemented yet");
             default -> handleUnknown();
         };
         return quit;
@@ -88,7 +95,7 @@ public class RequestHandler {
     private void handleQuit(){
         if(sessionData.getState() == LOGGED_IN) {
             try {
-                connection.logout();
+                httpConnection.logout();
             } catch (FailResponseCodeException e) {
                 consoleWriter.writeErrorMessage(e.getMessage());
             }
@@ -101,7 +108,7 @@ public class RequestHandler {
             return;
         }
         try {
-            connection.logout();
+            httpConnection.logout();
             sessionData.setAuthData(null);
             consoleWriter.setPrefix(LOGGED_OUT.name);
             sessionData.setState(LOGGED_OUT);
@@ -124,7 +131,7 @@ public class RequestHandler {
         String username = args[1];
         String password = args[2];
         try {
-            AuthData authData = connection.login(username, password);
+            AuthData authData = httpConnection.login(username, password);
             sessionData.setAuthData(authData);
             sessionData.setState(LOGGED_IN);
             consoleWriter.setPrefix(authData.username());
@@ -146,7 +153,7 @@ public class RequestHandler {
         String password = args[2];
         String email = args[3];
         try {
-            AuthData authData= connection.register(username,password,email);
+            AuthData authData= httpConnection.register(username,password,email);
             sessionData.setAuthData(authData);
             sessionData.setState(LOGGED_IN);
             consoleWriter.setPrefix(authData.username());
@@ -171,7 +178,7 @@ public class RequestHandler {
         }
         String name = args[1];
         try {
-            connection.createGame(name);
+            httpConnection.createGame(name);
             consoleWriter.writeMessage("Game created with name: " + name);
         } catch (FailResponseCodeException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
@@ -204,7 +211,7 @@ public class RequestHandler {
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
-            connection.joinGame(gameID,team);
+            httpConnection.joinGame(gameID,team);
             GameData gameData = sessionData.getGameFromCache(gamePos);
             sessionData.setCurrentGame(gameData);
             sessionData.setColor(team);
@@ -234,7 +241,7 @@ public class RequestHandler {
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
-            connection.observeGame(gameID);
+            httpConnection.observeGame(gameID);
             sessionData.setCurrentGameID(gameID);
             GameData gameData = sessionData.getGameFromCache(gamePos);
             if(gameData == null){
@@ -254,7 +261,7 @@ public class RequestHandler {
             return;
         }
         try {
-            Collection<GameData> games = connection.getGameList();
+            Collection<GameData> games = httpConnection.getGameList();
             sessionData.addGames(games);
             consoleWriter.writeGameList(sessionData.getGames());
         } catch (FailResponseCodeException e) {

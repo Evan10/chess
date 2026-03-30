@@ -1,6 +1,11 @@
 package client;
 
+import jakarta.websocket.DeploymentException;
 import ui.EscapeSequences;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class ChessClient {
@@ -8,16 +13,23 @@ public class ChessClient {
 
     RequestHandler requestHandler;
     public ClientSessionData sessionData;
-    private final ServerFacade serverConnection;
+    private final ServerFacade httpConnection;
+    private final WsClient wsConnection;
     private final ConsoleWriter consoleWriter;
 
-    public ChessClient(String host){
+    public ChessClient(URI address){
         sessionData = new ClientSessionData();
         sessionData.setState(ClientState.LOGGED_OUT);
 
         consoleWriter = new ConsoleWriter(sessionData);
-        serverConnection = new ServerFacade(host,8080, sessionData);
-        requestHandler = new RequestHandler(serverConnection, sessionData, consoleWriter);
+        httpConnection = new ServerFacade(address.getHost(),8080, sessionData);
+        try {
+            wsConnection = new WsClient(address, new ClientMessageHandler());
+        } catch (URISyntaxException | IOException | DeploymentException e) {
+            throw new RuntimeException(e);
+        }
+
+        requestHandler = new RequestHandler(httpConnection,wsConnection, sessionData, consoleWriter);
         running = true;
         run();
     }
@@ -36,7 +48,8 @@ public class ChessClient {
             }
             consoleWriter.flushToConsole();
         }
-        serverConnection.close();
+        httpConnection.close();
+        wsConnection.close();
     }
 
 

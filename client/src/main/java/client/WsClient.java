@@ -13,7 +13,7 @@ public class WsClient extends Endpoint {
     public WsClient(URI serverAddress, ClientMessageHandler messageHandler) throws URISyntaxException, DeploymentException, IOException {
 
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        session = container.connectToServer(this, new URI(serverAddress + "/ws"));
+        session = container.connectToServer(this, new URI("ws://"+serverAddress.getPath() + "/ws"));
         session.addMessageHandler(messageHandler);
 
     }
