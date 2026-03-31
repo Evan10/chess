@@ -25,10 +25,7 @@ public class WsClient extends Endpoint {
         session.addMessageHandler(messageHandler);
 
     }
-/*        CONNECT,
-                MAKE_MOVE,
-                LEAVE,
-                RESIGN*/
+
     public void connectToGame(int gameID) throws IOException {
         AuthData authData = sessionData.getAuthData();
         if(authData == null) {throw new IOException("Error: no auth");}

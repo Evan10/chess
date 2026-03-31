@@ -16,6 +16,7 @@ public class ChessClient {
     private final ServerFacade httpConnection;
     private final WsClient wsConnection;
     private final ConsoleWriter consoleWriter;
+    private final ClientMessageHandler messageHandler;
 
     public ChessClient(URI address){
         sessionData = new ClientSessionData();
@@ -23,8 +24,10 @@ public class ChessClient {
 
         consoleWriter = new ConsoleWriter(sessionData);
         httpConnection = new ServerFacade(address.getHost(),8080, sessionData);
+
+        messageHandler = new ClientMessageHandler(sessionData,consoleWriter);
         try {
-            wsConnection = new WsClient(address, new ClientMessageHandler(), sessionData);
+            wsConnection = new WsClient(address, messageHandler, sessionData);
         } catch (URISyntaxException | IOException | DeploymentException e) {
             throw new RuntimeException(e);
         }

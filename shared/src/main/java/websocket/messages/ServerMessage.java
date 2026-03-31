@@ -14,10 +14,22 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
     GameData gameData;
 
+    NotificationType notificationType;
+    String message;
+
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
         NOTIFICATION
+    }
+
+    public enum NotificationType {
+        OPPONENT_RESIGN,
+        YOU_RESIGN,
+        YOU_WIN,
+        YOU_LOSE,
+        YOU_DRAW_GAME,
+        PRINT_INFO
     }
 
     public ServerMessage(ServerMessageType type) {
@@ -29,8 +41,31 @@ public class ServerMessage {
         this.gameData=gameData;
     }
 
+    public ServerMessage(ServerMessageType type, String message) {
+        this.serverMessageType = type;
+        this.message=message;
+    }
+
+    public ServerMessage(NotificationType type, String message) {
+        this.serverMessageType = ServerMessageType.NOTIFICATION;
+        this.notificationType = type;
+        this.message=message;
+    }
+
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
+    }
+
+    public NotificationType getNotificationType() {
+        return notificationType;
+    }
+
+    public GameData getGameData() {
+        return gameData;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     @Override
