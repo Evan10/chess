@@ -43,16 +43,31 @@ public class WebsocketSessionHandler {
 
     public void broadcastGameUpdate(GameData gameData) throws IOException {
         List<Session> watchers = sessions.get(gameData.gameID());
-
         ServerMessage messageObj = determineMessageFromGameState(gameData);
         String message = serializer.toJson(messageObj);
+        broadcast(null, message,watchers);
+    }
+
+    public void broadcastResign(Session s, String gameID, ChessGame.TeamColor team) throws IOException {
+        List<Session> watchers = sessions.get(gameID);
+        ServerMessage messageObj = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,
+                "The " +team.name() +" player resigned from the game");
+        String message = serializer.toJson(messageObj);
+        broadcast(s,message,watchers);
+
+        ServerMessage messageObjToResigner = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,
+                "You resigned");
+        String msgToResigner = serializer.toJson(messageObjToResigner);
+        s.getRemote().sendString(msgToResigner);
+    }
+
+    private void broadcast(Session ignored, String message, List<Session> watchers) throws IOException {
         for(Session s: watchers){
-            if(s.isOpen()) {
+            if(s.isOpen() && !s.equals(ignored)) {
                 s.getRemote().sendString(message);
             }
         }
     }
-
 
     private ServerMessage determineMessageFromGameState(GameData gameData){
         ChessGame game = gameData.game();

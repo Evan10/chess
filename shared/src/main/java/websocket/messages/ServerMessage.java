@@ -17,6 +17,8 @@ public class ServerMessage {
     NotificationType notificationType;
     String message;
 
+    String errorMessage;
+
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
@@ -43,7 +45,11 @@ public class ServerMessage {
 
     public ServerMessage(ServerMessageType type, String message) {
         this.serverMessageType = type;
-        this.message=message;
+        if(type.equals(ServerMessageType.ERROR)){
+            this.errorMessage = message;
+        }else {
+            this.message = message;
+        }
     }
 
     public ServerMessage(NotificationType type, String message) {

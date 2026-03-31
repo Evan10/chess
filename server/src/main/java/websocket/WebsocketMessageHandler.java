@@ -29,15 +29,23 @@ public class WebsocketMessageHandler implements WsMessageHandler {
 
 
     private void handleLeave(WsMessageContext ctx, UserGameCommand command){
-
+        sessionHandler.leaveGame(command.getGameID().toString(),ctx.session);
     }
 
     private void handleConnect(WsMessageContext ctx, UserGameCommand command){
-        sessionHandler.addSessionToGame(command.getGameID().toString(),ctx.session);
+
+        String oldGameID = ctx.attribute("currentGameID");
+        String newGameID = command.getGameID().toString();
+        if(oldGameID!=null){
+            sessionHandler.switchGame(oldGameID, newGameID, ctx.session);
+        }else{
+            sessionHandler.addSessionToGame(newGameID,ctx.session);
+        }
+        ctx.attribute("currentGameID",newGameID);
     }
 
     private void handleResign(WsMessageContext ctx, UserGameCommand command){
-
+        String currentGame = command.getGameID().toString();
     }
 
     private void handleMakeMove(WsMessageContext ctx, UserGameCommand command){

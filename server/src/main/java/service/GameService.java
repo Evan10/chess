@@ -1,7 +1,6 @@
 package service;
 
-import chess.ChessGame;
-import chess.Constants;
+import chess.*;
 import dataaccess.exception.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.exception.InvalidRequestException;
@@ -13,6 +12,11 @@ import model.endpointresults.ListGamesResult;
 import org.jetbrains.annotations.NotNull;
 import request.*;
 import util.Util;
+import websocket.commands.UserGameCommand;
+import websocket.results.MakeMoveResult;
+import websocket.results.ResignResult;
+
+import java.util.Collection;
 
 import static util.Constants.*;
 
@@ -22,6 +26,46 @@ public class GameService {
 
     public GameService(GameDAO gameDAO) {
         this.gameDAO = gameDAO;
+    }
+
+    public MakeMoveResult makeMove(UserGameCommand command) throws DataAccessException {
+        GameData gameData = gameDAO.getGame(command.getGameID().toString());
+        ChessGame game = gameData.game();
+        ChessMove move = command.getChessMove();
+        if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
+            try {
+                game.makeMove(move);
+                gameDAO.updateGame(gameData);
+                if(!game.getState().equals(ChessGame.GameState.NOT_OVER)){
+                    String winMessage = switch (game.getState()){
+                        case BLACK_WIN_CHECKMATE -> "Black wins by checkmate";
+                        case WHITE_WIN_CHECKMATE -> "White wins by checkmate";
+                        case DRAW_STALEMATE -> "No valid moves; stalemate";
+                        default -> "Invalid game state";
+                    };
+                    return new MakeMoveResult(OK, winMessage,gameData);
+                }
+                return new MakeMoveResult(OK, "",gameData);
+            } catch (InvalidMoveException e) {
+                return new MakeMoveResult(FORBIDDEN,"Error: invalid move", gameData);
+            }
+        }else{
+            return new MakeMoveResult(FORBIDDEN,"Error: game is over", gameData);
+        }
+    }
+
+    public ResignResult resignFromGame(UserGameCommand command, ChessGame.TeamColor team) throws DataAccessException {
+        GameData gameData = gameDAO.getGame(command.getGameID().toString());
+        ChessGame game = gameData.game();
+        if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
+                game.setState(team.equals(ChessGame.TeamColor.WHITE)
+                        ? ChessGame.GameState.BLACK_WIN_OPP_RESIGN
+                        : ChessGame.GameState.WHITE_WIN_OPP_RESIGN);
+                gameDAO.updateGame(gameData);
+                return new ResignResult(OK, team.name()+" player resigned");
+        }else{
+            return new ResignResult(FORBIDDEN,"Error: game is over");
+        }
     }
 
     public @NotNull ListGamesResult listGames(ListGamesRequest req) {
@@ -88,7 +132,6 @@ public class GameService {
 
         return new JoinGameResult(util.Constants.OK, "");
     }
-
 
     private boolean invalidTeamColor(String color) {
         return color == null || color.isBlank() || !(color.equals(Constants.BLACK_TEAM) || color.equals(Constants.WHITE_TEAM));

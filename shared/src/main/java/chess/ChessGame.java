@@ -14,11 +14,22 @@ import java.util.Objects;
 public class ChessGame {
     ChessBoard cboard;
     TeamColor teamTurn;
+    GameState state;
+
+    public enum GameState{
+        WHITE_WIN_CHECKMATE,
+        BLACK_WIN_CHECKMATE,
+        WHITE_WIN_OPP_RESIGN,
+        BLACK_WIN_OPP_RESIGN,
+        DRAW_STALEMATE,
+        NOT_OVER
+    }
 
     public ChessGame() {
         cboard = new ChessBoard();
         cboard.resetBoard();
         teamTurn = TeamColor.WHITE;
+        state = GameState.NOT_OVER;
     }
 
     /**
@@ -100,8 +111,18 @@ public class ChessGame {
             cboard.movePiece(move);
             toggleTeamTurn();
         }
+        updateGameState();
     }
 
+    private void updateGameState(){
+        if(isInCheckmate(teamTurn)){
+            state = teamTurn.equals(TeamColor.WHITE)
+                    ? GameState.BLACK_WIN_CHECKMATE
+                    : GameState.WHITE_WIN_CHECKMATE;
+        }else if(isInStalemate(teamTurn)){
+            state = GameState.DRAW_STALEMATE;
+        }
+    }
     /**
      * Determines if the given team is in check
      *
@@ -168,17 +189,26 @@ public class ChessGame {
         return cboard;
     }
 
+
+    public GameState getState() {
+        return state;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return Objects.equals(cboard, chessGame.cboard) && teamTurn == chessGame.teamTurn;
+        return Objects.equals(cboard, chessGame.cboard) && teamTurn == chessGame.teamTurn && state.equals(chessGame.state);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cboard, teamTurn);
+        return Objects.hash(cboard, teamTurn, state);
     }
 }
