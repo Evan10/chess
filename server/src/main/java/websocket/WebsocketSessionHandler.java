@@ -10,23 +10,24 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import static util.Constants.OK;
 
 public class WebsocketSessionHandler {
 
-    private ConcurrentMap<String, List<Session>> sessions = new ConcurrentHashMap<>();
-    private static final Gson serializer = new Gson();
+    private final ConcurrentMap<String, List<Session>> sessions = new ConcurrentHashMap<>();
+    private static final Gson SERIALIZER = new Gson();
 
-    WebsocketSessionHandler(){
+    public WebsocketSessionHandler(){
     }
 
     public void addSessionToGame(String gameID, Session session){
+        if(gameID == null){return;}
         sessions.computeIfAbsent(gameID,id -> new ArrayList<>()).add(session);
     }
 
     public void leaveGame(String gameID, Session session){
+        if(gameID == null){return;}
         List<Session> sessionList = sessions.get(gameID);
         if(sessionList!= null) {
             sessionList.remove(session);
@@ -44,20 +45,19 @@ public class WebsocketSessionHandler {
     public void broadcastGameUpdate(GameData gameData) throws IOException {
         List<Session> watchers = sessions.get(gameData.gameID());
         ServerMessage messageObj = determineMessageFromGameState(gameData);
-        String message = serializer.toJson(messageObj);
+        String message = SERIALIZER.toJson(messageObj);
         broadcast(null, message,watchers);
     }
 
-    public void broadcastResign(Session s, String gameID, ChessGame.TeamColor team) throws IOException {
+    public void broadcastResign(Session s, String gameID, String msg) throws IOException {
         List<Session> watchers = sessions.get(gameID);
-        ServerMessage messageObj = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,
-                "The " +team.name() +" player resigned from the game");
-        String message = serializer.toJson(messageObj);
+        ServerMessage messageObj = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,msg);
+        String message = SERIALIZER.toJson(messageObj);
         broadcast(s,message,watchers);
 
         ServerMessage messageObjToResigner = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,
                 "You resigned");
-        String msgToResigner = serializer.toJson(messageObjToResigner);
+        String msgToResigner = SERIALIZER.toJson(messageObjToResigner);
         s.getRemote().sendString(msgToResigner);
     }
 
@@ -67,6 +67,10 @@ public class WebsocketSessionHandler {
                 s.getRemote().sendString(message);
             }
         }
+    }
+
+    public static void sendErrorMessage(Session session, ServerMessage message) throws IOException {
+        session.getRemote().sendString(SERIALIZER.toJson(message));
     }
 
     private ServerMessage determineMessageFromGameState(GameData gameData){

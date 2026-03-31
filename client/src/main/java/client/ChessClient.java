@@ -18,16 +18,17 @@ public class ChessClient {
     private final ConsoleWriter consoleWriter;
     private final ClientMessageHandler messageHandler;
 
-    public ChessClient(URI address){
+    public ChessClient(String host){
+        int port = 8080;
         sessionData = new ClientSessionData();
         sessionData.setState(ClientState.LOGGED_OUT);
 
         consoleWriter = new ConsoleWriter(sessionData);
-        httpConnection = new ServerFacade(address.getHost(),8080, sessionData);
+        httpConnection = new ServerFacade(host, port, sessionData);
 
         messageHandler = new ClientMessageHandler(sessionData,consoleWriter);
         try {
-            wsConnection = new WsClient(address, messageHandler, sessionData);
+            wsConnection = new WsClient(host, port, messageHandler, sessionData);
         } catch (URISyntaxException | IOException | DeploymentException e) {
             throw new RuntimeException(e);
         }

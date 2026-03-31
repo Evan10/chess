@@ -80,29 +80,29 @@ public class RequestHandler {
     private void handleHelp(){
         if(sessionData.getState() == LOGGED_OUT){
             consoleWriter.writeMessage("""
-                    register <Username> <Password> <Email> - create an account
-                    login <Username> <Password> - to play chess
-                    """);
+                            register <Username> <Password> <Email> - create an account
+                            login <Username> <Password> - to play chess
+                        """);
         }else{
             if(canUseGameCommands()){
                 consoleWriter.writeMessage("""
-                        redraw - current game
-                        leave - current game
-                        highlight <position> - highlight valid moves
+                            redraw - current game
+                            leave - current game
+                            highlight <position> - highlight valid moves
                         """);
             } else {
                 consoleWriter.writeMessage("""
-                        create <Name> - create a chess game
-                        list - all chess games
-                        join <GamePosition> [BLACK|WHITE]
-                        observe <GamePosition> - a chess game
-                        logout - of chess client
+                            create <Name> - create a chess game
+                            list - all chess games
+                            join <GamePosition> [BLACK|WHITE]
+                            observe <GamePosition> - a chess game
+                            logout - of chess client
                         """);
             }
             if(isPlayerInGame()) {
                 consoleWriter.writeMessage("""
-                        resign - from current game
-                        move <position-start> <position-end> <*promotion>
+                            resign - from current game
+                            move <position-start> <position-end> <*promotion>
                         """);
             }
         }
@@ -418,9 +418,11 @@ public class RequestHandler {
         String username = authData.username();
         if(username == null) {return false;}
         boolean isWhite = sessionData.getColor().equals(ChessGame.TeamColor.WHITE);
-        return  isWhite ?
-                sessionData.getCurrentGame().whiteUsername().equals(username):
-                sessionData.getCurrentGame().blackUsername().equals(username);
+        if(sessionData.getCurrentGame() == null){return false;}
+        String correspondingUsername = isWhite ?
+                sessionData.getCurrentGame().whiteUsername():
+                sessionData.getCurrentGame().blackUsername();
+        return  correspondingUsername!=null && correspondingUsername.equals(username);
     }
 
     private boolean canMakeMove(){

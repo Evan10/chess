@@ -5,6 +5,7 @@ import dataaccess.exception.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.exception.InvalidRequestException;
 import dataaccess.exception.UnavailableRequestException;
+import model.AuthData;
 import model.GameData;
 import model.endpointresults.CreateGameResult;
 import model.endpointresults.JoinGameResult;
@@ -28,10 +29,18 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public MakeMoveResult makeMove(UserGameCommand command) throws DataAccessException {
+    public MakeMoveResult makeMove(UserGameCommand command, AuthData authData) throws DataAccessException {
         GameData gameData = gameDAO.getGame(command.getGameID().toString());
         ChessGame game = gameData.game();
         ChessMove move = command.getChessMove();
+
+        if(!authData.username().equals(
+                game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)
+                ? gameData.whiteUsername()
+                : gameData.blackUsername())){
+            return new MakeMoveResult(FORBIDDEN, "Error: invalid move attempt", gameData);
+        }
+
         if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
             try {
                 game.makeMove(move);
@@ -54,9 +63,17 @@ public class GameService {
         }
     }
 
-    public ResignResult resignFromGame(UserGameCommand command, ChessGame.TeamColor team) throws DataAccessException {
+    public ResignResult resignFromGame(UserGameCommand command, AuthData authData) throws DataAccessException {
         GameData gameData = gameDAO.getGame(command.getGameID().toString());
         ChessGame game = gameData.game();
+        ChessGame.TeamColor team;
+        if(gameData.whiteUsername().equals(authData.username())){
+            team = ChessGame.TeamColor.WHITE;
+        }else if(gameData.blackUsername().equals(authData.username())){
+            team = ChessGame.TeamColor.BLACK;
+        }else{
+            return new ResignResult(FORBIDDEN,"Error: user is not a player in this game");
+        }
         if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
                 game.setState(team.equals(ChessGame.TeamColor.WHITE)
                         ? ChessGame.GameState.BLACK_WIN_OPP_RESIGN

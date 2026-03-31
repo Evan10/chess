@@ -12,11 +12,7 @@ public class ClientMain {
         if(args.length>0){
             host = args[0];
         }
-        try {
-            new ChessClient(new URI(host));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        new ChessClient(host);
     }
 
 

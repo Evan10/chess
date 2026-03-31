@@ -18,12 +18,14 @@ public class WsClient extends Endpoint {
     private final Session session;
     private final ClientSessionData sessionData;
     private static final Gson serializer = new Gson();
-    public WsClient(URI serverAddress, ClientMessageHandler messageHandler, ClientSessionData sessionData) throws URISyntaxException, DeploymentException, IOException {
+
+    public WsClient(String host, int port, ClientMessageHandler messageHandler, ClientSessionData sessionData) throws URISyntaxException, DeploymentException, IOException {
         this.sessionData=sessionData;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        session = container.connectToServer(this, new URI("ws://"+serverAddress.getPath() + "/ws"));
+        URI endpoint = new URI(String.format("ws://%s:%d/ws",host, port));
+        System.out.println(endpoint);
+        session = container.connectToServer(this, endpoint);
         session.addMessageHandler(messageHandler);
-
     }
 
     public void connectToGame(int gameID) throws IOException {

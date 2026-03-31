@@ -15,6 +15,7 @@ import util.Constants;
 import util.MyLogger;
 import websocket.WebsocketConnection;
 import websocket.WebsocketMessageHandler;
+import websocket.WebsocketSessionHandler;
 
 import java.util.Collection;
 import java.util.List;
@@ -49,8 +50,9 @@ public class Server {
 
         AuthHandler authHandler = new AuthHandler(authService);
 
-        WebsocketConnection connection = new WebsocketConnection();
-        WebsocketMessageHandler messageHandler = new WebsocketMessageHandler();
+        WebsocketSessionHandler sessionHandler = new WebsocketSessionHandler();
+        WebsocketConnection connection = new WebsocketConnection(sessionHandler);
+        WebsocketMessageHandler messageHandler = new WebsocketMessageHandler(sessionHandler,gameService,authService);
         // Register your endpoints and exception handlers here.
         javalin.before(context -> LOGGER.info(context.body()))
                 .before(authHandler)
