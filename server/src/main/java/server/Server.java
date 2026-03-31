@@ -13,6 +13,8 @@ import service.GameService;
 import service.UserService;
 import util.Constants;
 import util.MyLogger;
+import websocket.WebsocketConnection;
+import websocket.WebsocketMessageHandler;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +49,8 @@ public class Server {
 
         AuthHandler authHandler = new AuthHandler(authService);
 
+        WebsocketConnection connection = new WebsocketConnection();
+        WebsocketMessageHandler messageHandler = new WebsocketMessageHandler();
         // Register your endpoints and exception handlers here.
         javalin.before(context -> LOGGER.info(context.body()))
                 .before(authHandler)
@@ -57,6 +61,11 @@ public class Server {
                 .get("/game", chessGameHandler::listGamesHandler)
                 .post("/game", chessGameHandler::createGameHandler)
                 .put("/game", chessGameHandler::joinGameHandler)
+                .ws("/ws",ws -> {
+                    ws.onMessage(messageHandler);
+                    ws.onClose(connection);
+                    ws.onConnect(connection);
+                })
                 .after(context -> LOGGER.info(context.status() + " " + context.result()))
                 .exception(DatabaseConnectivityException.class, ((e, context) ->
                         context.status(Constants.SERVER_ERROR)

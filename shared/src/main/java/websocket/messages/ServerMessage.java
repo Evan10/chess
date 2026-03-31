@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class ServerMessage {
     ServerMessageType serverMessageType;
-    GameData gameData;
+    GameData game;
 
     NotificationType notificationType;
     String message;
@@ -26,9 +26,9 @@ public class ServerMessage {
     public enum NotificationType {
         OPPONENT_RESIGN,
         YOU_RESIGN,
-        YOU_WIN,
-        YOU_LOSE,
-        YOU_DRAW_GAME,
+        BLACK_WIN,
+        WHITE_WIN,
+        DRAW_GAME,
         PRINT_INFO
     }
 
@@ -38,7 +38,7 @@ public class ServerMessage {
 
     public ServerMessage(GameData gameData) {
         this.serverMessageType = ServerMessageType.LOAD_GAME;
-        this.gameData=gameData;
+        this.game =gameData;
     }
 
     public ServerMessage(ServerMessageType type, String message) {
@@ -60,8 +60,8 @@ public class ServerMessage {
         return notificationType;
     }
 
-    public GameData getGameData() {
-        return gameData;
+    public GameData getGame() {
+        return game;
     }
 
     public String getMessage() {

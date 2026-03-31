@@ -28,7 +28,7 @@ public class ClientMessageHandler implements MessageHandler.Whole<String> {
 
 
     private void handleLoadGame(ServerMessage message){
-        GameData gameData = message.getGameData();
+        GameData gameData = message.getGame();
         if(gameData== null || sessionData.getCurrentGameID().equals(gameData.gameID())){
             return;
         }
