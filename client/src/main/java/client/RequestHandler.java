@@ -82,21 +82,35 @@ public class RequestHandler {
             consoleWriter.writeMessage("""
                     register <Username> <Password> <Email> - create an account
                     login <Username> <Password> - to play chess
-                    quit - chess client
-                    help - commands
                     """);
         }else{
-            consoleWriter.writeMessage("""
-                    create <Name> - create a chess game
-                    list - all chess games
-                    join <GamePosition> [BLACK|WHITE]
-                    observe <GamePosition> - a chess game
-                    logout - of chess client
-                    quit - chess client
-                    help - commands
-                    """);
+            if(canUseGameCommands()){
+                consoleWriter.writeMessage("""
+                        redraw - current game
+                        leave - current game
+                        highlight <position> - highlight valid moves
+                        """);
+            } else {
+                consoleWriter.writeMessage("""
+                        create <Name> - create a chess game
+                        list - all chess games
+                        join <GamePosition> [BLACK|WHITE]
+                        observe <GamePosition> - a chess game
+                        logout - of chess client
+                        """);
+            }
+            if(isPlayerInGame()) {
+                consoleWriter.writeMessage("""
+                        resign - from current game
+                        move <position-start> <position-end> <*promotion>
+                        """);
+            }
         }
 
+        consoleWriter.writeMessage("""
+                    quit - chess client
+                    help - commands
+                """);
     }
 
     private void handleQuit(){
@@ -306,8 +320,8 @@ public class RequestHandler {
             consoleWriter.writeErrorMessage("Error: invalid format");
             consoleWriter.writeMessage("""
                     Must be of format
-                        move <move-start> <move-end> <*promotion>
-                    where each move is of format
+                        move <position-start> <position-end> <*promotion>
+                    where each position is of format
                         [a-h][1-8]
                     examples
                         a1
@@ -370,8 +384,8 @@ public class RequestHandler {
             consoleWriter.writeErrorMessage("Error: invalid format");
             consoleWriter.writeMessage("""
                     Must be of format
-                        highlight <Move>
-                    where move is of format
+                        highlight <position>
+                    where position is of format
                         [a-h][1-8]
                     examples
                         a1
