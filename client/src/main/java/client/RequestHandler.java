@@ -1,6 +1,9 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import model.AuthData;
 import model.GameData;
 import ui.UIChessBoardHelper;
@@ -11,6 +14,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static client.ChessMoveParser.parseChessPosition;
 import static client.ClientCommands.*;
 import static client.ClientState.LOGGED_IN;
 import static client.ClientState.LOGGED_OUT;
@@ -55,11 +59,11 @@ public class RequestHandler {
             case LIST_GAMES -> handleListGames();
             case JOIN_GAME -> handleJoinGame(parts);
             case OBSERVE_GAME -> handleObserveGame(parts);
-            case REDRAW_GAME -> throw new RuntimeException("Redraw not implemented yet");
-            case LEAVE_GAME -> throw new RuntimeException("Leave not implemented yet");
-            case MAKE_MOVE -> throw new RuntimeException("Move not implemented yet");
-            case RESIGN_FROM_GAME -> throw new RuntimeException("Resign not implemented yet");
-            case HIGHLIGHT_MOVES -> throw new RuntimeException("Highlight not implemented yet");
+            case REDRAW_GAME -> handleRedrawGame();
+            case LEAVE_GAME -> handleLeaveGame();
+            case MAKE_MOVE -> handleMakeMoveInGame(parts);
+            case RESIGN_FROM_GAME -> handleResignFromGame();
+            case HIGHLIGHT_MOVES -> handleHighlightMoves(parts);
             default -> handleUnknown();
         };
         return quit;
@@ -281,21 +285,41 @@ public class RequestHandler {
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
         }
-
+        consoleWriter.writeBoard(sessionData.getCurrentGame().game());
     }
 
     private void handleLeaveGame(){
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
         }
         try {
             wsConnection.leaveGame();
+            consoleWriter.writeMessage("Left game");
         } catch (IOException e) {
             consoleWriter.writeErrorMessage("Error: unable to leave game");
         }
     }
 
     private void handleMakeMoveInGame(String[] args){
+        if(args.length<3||args.length>4){
+            consoleWriter.writeErrorMessage("Error: invalid format");
+            consoleWriter.writeMessage("""
+                    Must be of format
+                        move <move-start> <move-end> <*promotion>
+                    where each move is of format
+                        [a-h][1-8]
+                    examples
+                        a1
+                        c5
+                        b8
+                    where promotion *(if applicable) is
+                        the name of the piece type or first letter
+                        with the exception of the knight which is
+                        abbreviated to "kn"
+                    """);
+            return;
+        }
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
             return;
@@ -306,7 +330,23 @@ public class RequestHandler {
             consoleWriter.writeErrorMessage("Error: not your turn");
             return;
         }
-
+        String start = args[1];
+        String end = args[2];
+        String promotion = "";
+        if(args.length == 4){
+            promotion = args[3];
+        }
+        try {
+            ChessMove move = ChessMoveParser.parseChessMove(start,end,promotion);
+            wsConnection.makeMoveInGame(move);
+            // stops client from double sending moves before hearing back from the server
+            sessionData.getCurrentGame().game().toggleTeamTurn();
+            consoleWriter.writeMessage("Move made");
+        } catch (InvalidMoveException e) {
+            consoleWriter.writeErrorMessage(e.getMessage());
+        } catch (IOException e) {
+            consoleWriter.writeErrorMessage("Error: unable to connect websocket");
+        }
     }
 
     private void handleResignFromGame(){
@@ -317,13 +357,41 @@ public class RequestHandler {
             consoleWriter.writeErrorMessage("Error: not a player");
             return;
         }
+        try {
+            wsConnection.resignFromGame();
+            consoleWriter.writeMessage("Successfully resigned");
+        } catch (IOException e) {
+            consoleWriter.writeErrorMessage(e.getMessage());
+        }
     }
 
-    private void handleHighlightMoves(){
+    private void handleHighlightMoves(String[] args){
+        if(args.length!=2){
+            consoleWriter.writeErrorMessage("Error: invalid format");
+            consoleWriter.writeMessage("""
+                    Must be of format
+                        highlight <Move>
+                    where move is of format
+                        [a-h][1-8]
+                    examples
+                        a1
+                        c5
+                        b8
+                    """);
+            return;
+        }
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
         }
-
+        String start = args[1];
+        try {
+            ChessPosition startPos = parseChessPosition(start);
+            Collection<ChessMove> legalMoves = sessionData.getCurrentGame().game().validMoves(startPos);
+            consoleWriter.writeBoard(sessionData.getCurrentGame().game(), legalMoves);
+        } catch (InvalidMoveException e) {
+            consoleWriter.writeErrorMessage(e.getMessage());
+        }
     }
 
     private boolean canUseGameCommands(){

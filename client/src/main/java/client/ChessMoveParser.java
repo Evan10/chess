@@ -1,29 +1,38 @@
 package client;
 
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 
 public class ChessMoveParser {
 
-    public static void main(String[] args){
-        System.out.println(chessLetterToNumber("a"));
-        System.out.println(chessLetterToNumber("b"));
-        System.out.println(chessLetterToNumber("h"));
+    public static void main(String[] args) throws InvalidMoveException {
+        ChessMove move = parseChessMove("b2","c2","");
+        System.out.println(move);
     }
 
-    public static ChessMove parseChessMove(String start, String end, String promotion){
 
-        return null;
+
+    public static ChessMove parseChessMove(String start, String end, String promotion) throws InvalidMoveException {
+        ChessPosition startPos = parseChessPosition(start);
+        ChessPosition endPos = parseChessPosition(end);
+        ChessPiece.PieceType type = parsePieceType(promotion);
+        if(!startPos.isValid() || !endPos.isValid()){
+            throw new InvalidMoveException("Invalid start or end position");
+        }
+        return new ChessMove(startPos,endPos,type);
     }
 
-    private static ChessPosition parseChessPosition(String position) throws InvalidMoveException {
+    public static ChessPosition parseChessPosition(String position) throws InvalidMoveException {
         if(position.length() != 2){
             throw new InvalidMoveException("Invalid position given; must be of format [a-h][1-8]");
         }
+        String lowercasePosition = position.toLowerCase();
+        String letter = lowercasePosition.substring(0,1);
+        String number = lowercasePosition.substring(1,2);
 
-        return null;
+        int letterIndex = chessLetterToNumber(letter);
+        int numberIndex = Integer.parseInt(number);
+
+        return new ChessPosition(numberIndex, letterIndex);
     }
 
     private static ChessPiece.PieceType parsePieceType(String piece) throws InvalidMoveException {
