@@ -30,6 +30,7 @@ public class RequestHandler {
     private final WsClient wsConnection;
     private final ClientSessionData sessionData;
     private final ConsoleWriter consoleWriter;
+
     RequestHandler(ServerFacade httpConnection,WsClient wsConnection, ClientSessionData sessionData, ConsoleWriter consoleWriter){
         this.httpConnection=httpConnection;
         this.wsConnection=wsConnection;
@@ -212,12 +213,7 @@ public class RequestHandler {
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
             httpConnection.joinGame(gameID,team);
-
-            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
-                    sessionData.getAuthData().authToken(),
-                    Integer.parseInt(gameID));
-            wsConnection.send(command);
-
+            wsConnection.connectToGame(Integer.parseInt(gameID));
             GameData gameData = sessionData.getGameFromCache(gamePos);
             sessionData.setCurrentGame(gameData);
             sessionData.setColor(team);
@@ -250,10 +246,7 @@ public class RequestHandler {
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
 
-            UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
-                    sessionData.getAuthData().authToken(),
-                    Integer.parseInt(gameID));
-            wsConnection.send(command);
+            wsConnection.connectToGame(Integer.parseInt(gameID));
 
             sessionData.setCurrentGameID(gameID);
             GameData gameData = sessionData.getGameFromCache(gamePos);
@@ -288,11 +281,17 @@ public class RequestHandler {
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
         }
+
     }
 
     private void handleLeaveGame(){
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
+        }
+        try {
+            wsConnection.leaveGame();
+        } catch (IOException e) {
+            consoleWriter.writeErrorMessage("Error: unable to leave game");
         }
     }
 
@@ -307,6 +306,7 @@ public class RequestHandler {
             consoleWriter.writeErrorMessage("Error: not your turn");
             return;
         }
+
     }
 
     private void handleResignFromGame(){

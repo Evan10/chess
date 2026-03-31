@@ -24,7 +24,7 @@ public class ChessClient {
         consoleWriter = new ConsoleWriter(sessionData);
         httpConnection = new ServerFacade(address.getHost(),8080, sessionData);
         try {
-            wsConnection = new WsClient(address, new ClientMessageHandler());
+            wsConnection = new WsClient(address, new ClientMessageHandler(), sessionData);
         } catch (URISyntaxException | IOException | DeploymentException e) {
             throw new RuntimeException(e);
         }
