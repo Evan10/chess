@@ -6,19 +6,17 @@ import jakarta.websocket.*;
 import model.AuthData;
 import websocket.commands.UserGameCommand;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import static websocket.commands.UserGameCommand.CommandType.*;
 
 public class WsClient extends Endpoint {
     private final Session session;
     private final ClientSessionData sessionData;
-    private static final Gson serializer = new Gson();
+    private static final Gson SERIALIZER = new Gson();
 
-    public WsClient(String host, int port, ClientMessageHandler messageHandler, ClientSessionData sessionData) throws URISyntaxException, DeploymentException, IOException {
+    public WsClient(String host, int port, ClientMessageHandler messageHandler, ClientSessionData sessionData) throws Exception {
         this.sessionData=sessionData;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         URI endpoint = new URI(String.format("ws://%s:%d/ws",host, port));
@@ -28,11 +26,7 @@ public class WsClient extends Endpoint {
     }
 
     public void connectToGame(int gameID) throws IOException {
-        AuthData authData = sessionData.getAuthData();
-        if(authData == null) {throw new IOException("Error: no auth");}
-        String authToken = authData.authToken();
-        UserGameCommand command = new UserGameCommand(CONNECT,authToken,gameID);
-        send(command);
+        handleBasicGameEvent(CONNECT,gameID);
     }
 
     public void makeMoveInGame(ChessMove move) throws IOException {
@@ -46,26 +40,23 @@ public class WsClient extends Endpoint {
     }
 
     public void leaveGame() throws IOException{
-        AuthData authData = sessionData.getAuthData();
-        if(authData == null) {throw new IOException("Error: no auth");}
-        String authToken = authData.authToken();
-        UserGameCommand command = new UserGameCommand(LEAVE,
-                authToken,
-                Integer.parseInt(sessionData.getCurrentGameID()));
-        send(command);
+        handleBasicGameEvent(LEAVE,Integer.parseInt(sessionData.getCurrentGameID()));
     }
     public void resignFromGame() throws IOException{
+        handleBasicGameEvent(RESIGN,Integer.parseInt(sessionData.getCurrentGameID()));
+    }
+
+    private void handleBasicGameEvent(UserGameCommand.CommandType type, int gameID) throws IOException{
         AuthData authData = sessionData.getAuthData();
         if(authData == null) {throw new IOException("Error: no auth");}
         String authToken = authData.authToken();
-        UserGameCommand command = new UserGameCommand(RESIGN,
-                authToken,
-                Integer.parseInt(sessionData.getCurrentGameID()));
+        UserGameCommand command = new UserGameCommand(type, authToken, gameID);
         send(command);
+
     }
 
     private void send(Object message) throws IOException {
-        send(serializer.toJson(message));
+        send(SERIALIZER.toJson(message));
     }
     private void send(String message) throws IOException {
         session.getBasicRemote().sendText(message);

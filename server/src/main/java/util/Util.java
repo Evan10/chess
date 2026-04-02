@@ -93,7 +93,7 @@ public class Util {
     }
 
     private static String chessPieceToString(ChessPiece.PieceType type){
-        if(type == null) return "";
+        if(type == null) {return "";}
         return switch (type) {
             case ChessPiece.PieceType.KING -> "K";
             case ChessPiece.PieceType.QUEEN -> "Q";

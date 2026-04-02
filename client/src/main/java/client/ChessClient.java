@@ -1,9 +1,5 @@
 package client;
 
-import jakarta.websocket.DeploymentException;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class ChessClient {
@@ -26,7 +22,7 @@ public class ChessClient {
         ClientMessageHandler messageHandler = new ClientMessageHandler(sessionData, consoleWriter);
         try {
             wsConnection = new WsClient(host, port, messageHandler, sessionData);
-        } catch (URISyntaxException | IOException | DeploymentException e) {
+        } catch (Exception e) {
             consoleWriter.writeErrorMessage("Error: Unable to connect to websocket server;\n server may not be running");
             consoleWriter.flushToConsole();
             return;
