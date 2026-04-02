@@ -57,15 +57,6 @@ public class GameService {
             try {
                 game.makeMove(move);
                 gameDAO.updateGame(gameData);
-                if(game.getState().isGameOver()){
-                    String winMessage = switch (game.getState()){
-                        case BLACK_WIN_CHECKMATE -> String.format("Black player %s wins by checkmate",gameData.blackUsername());
-                        case WHITE_WIN_CHECKMATE -> String.format("White player %s wins by checkmate",gameData.whiteUsername());
-                        case DRAW_STALEMATE -> String.format("The %s player has no valid moves; stalemate",game.getTeamTurn().name());
-                        default -> "Invalid game state";
-                    };
-                    return new MakeMoveResult(OK, winMessage,gameData);
-                }
                 return new MakeMoveResult(OK, "",gameData);
             } catch (InvalidMoveException e) {
                 return new MakeMoveResult(FORBIDDEN,"Error: invalid move", gameData);
@@ -84,7 +75,7 @@ public class GameService {
         }else if(gameData.blackUsername().equals(authData.username())){
             team = ChessGame.TeamColor.BLACK;
         }else{
-            return new ResignResult(FORBIDDEN,"Error: user is not a player in this game");
+            return new ResignResult(FORBIDDEN,"Error: user is not a player in this game", null);
         }
         if(!game.getState().isGameOver()){
                 game.setState(team.equals(ChessGame.TeamColor.WHITE)
@@ -92,16 +83,16 @@ public class GameService {
                         : ChessGame.GameState.WHITE_WIN_OPP_RESIGN);
                 gameDAO.updateGame(gameData);
                 String msg = String.format("User %s playing as %s resigned",authData.username(),team.name());
-                return new ResignResult(OK, msg);
+                return new ResignResult(OK, msg, team);
         }else{
-            return new ResignResult(FORBIDDEN,"Error: game is over");
+            return new ResignResult(FORBIDDEN,"Error: game is over",null);
         }
     }
 
     public LeaveGameResult leaveGame(UserGameCommand command, AuthData authData) throws DataAccessException {
         GameData gameData = gameDAO.getGame(command.getGameID().toString());
         if(!isPlayer(authData.username(),gameData)){
-            return new LeaveGameResult(FORBIDDEN,"Error: user is not a player in the game", gameData);
+            return new LeaveGameResult(OK,String.format("Observer %s left the game",authData.username()),gameData);
         }
         boolean isWhite = ChessGame.TeamColor.WHITE.equals(getTeamColor(authData.username(),gameData));
         String whiteUsername = isWhite? null: gameData.whiteUsername();

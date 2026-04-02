@@ -54,15 +54,6 @@ public class WebsocketSessionHandler {
     }
 
 
-    public void broadcastResign(Session s, String gameID, String msg) throws IOException {
-        broadcastNotification(s, ServerMessage.NotificationType.OPPONENT_RESIGN,msg, gameID);
-
-        ServerMessage messageObjToResigner = new ServerMessage(ServerMessage.NotificationType.YOU_RESIGN,
-                "You resigned");
-        String msgToResigner = SERIALIZER.toJson(messageObjToResigner);
-        s.getRemote().sendString(msgToResigner);
-    }
-
     public void broadcastNotification(Session s, ServerMessage.NotificationType type, String msg, String gameID) throws IOException {
         List<Session> watchers = sessions.get(gameID);
         ServerMessage messageObj = new ServerMessage(type,msg);

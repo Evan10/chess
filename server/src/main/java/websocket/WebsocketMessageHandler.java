@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 
 import static util.Constants.OK;
 import static util.Util.humanReadableChessMove;
+import static util.Util.isPlayer;
 import static websocket.messages.ServerMessage.NotificationType.*;
 
 public class WebsocketMessageHandler implements WsMessageHandler {
@@ -54,6 +55,7 @@ public class WebsocketMessageHandler implements WsMessageHandler {
         }}catch(DataAccessException e){
             ServerMessage err = new ServerMessage(ServerMessage.ServerMessageType.ERROR,e.getMessage());
             WebsocketSessionHandler.sendErrorMessage(ctx.session,err);
+            LOGGER.info("Websocket error:\n" +err.getMessage() );
         }
     }
 
@@ -124,7 +126,10 @@ public class WebsocketMessageHandler implements WsMessageHandler {
             WebsocketSessionHandler.sendErrorMessage(ctx.session,err);
             return;
         }
-        sessionHandler.broadcastResign(ctx.session,currentGameID, result.message());
+        ServerMessage.NotificationType type = result.teamToResign().equals(ChessGame.TeamColor.WHITE)?
+                WHITE_RESIGN:
+                BLACK_RESIGN;
+        sessionHandler.broadcastNotification(null,type, result.message(),currentGameID);
     }
 
     private void handleMakeMove(WsMessageContext ctx, UserGameCommand command) throws IOException, DataAccessException {
@@ -138,16 +143,48 @@ public class WebsocketMessageHandler implements WsMessageHandler {
                 WebsocketSessionHandler.sendErrorMessage(ctx.session,err);
                 return;
             }
-            sessionHandler.broadcastGameUpdate(result.gameData());
-            boolean toSender = !result.gameData().game().getState().equals(ChessGame.GameState.NORMAL);
-            sessionHandler.broadcastNotification(toSender ? null : ctx.session,
-                    CHESS_MOVE,
-                    decideMoveMessage(command, authData.username()),
-                    result.gameData().gameID());
-
+            GameData gameData = result.gameData();
+            sessionHandler.broadcastGameUpdate(gameData);
+            sessionHandler.broadcastNotification(ctx.session,
+                CHESS_MOVE,
+                decideMoveMessage(command, authData.username()),
+                    gameData.gameID());
+            boolean doNotifyGameState = !gameData.game().getState().equals(ChessGame.GameState.NORMAL);
+            if(doNotifyGameState){
+                ServerMessage.NotificationType type = gameStateToNotificationType(gameData.game().getState());
+                sessionHandler.broadcastNotification(null,
+                        type,
+                        decideGameEventMessage(type,gameData.whiteUsername(),gameData.blackUsername()),
+                        result.gameData().gameID());
+            }
 
     }
 
+    private ServerMessage.NotificationType gameStateToNotificationType(ChessGame.GameState state){
+        return switch (state){
+            case WHITE_WIN_OPP_RESIGN -> BLACK_RESIGN;
+            case BLACK_WIN_OPP_RESIGN -> WHITE_RESIGN;
+            case DRAW_STALEMATE -> DRAW_GAME;
+            case WHITE_WIN_CHECKMATE -> WHITE_WIN_BY_CHECKMATE;
+            case BLACK_WIN_CHECKMATE -> BLACK_WIN_BY_CHECKMATE;
+            case BLACK_CHECK -> BLACK_IN_CHECK;
+            case WHITE_CHECK -> WHITE_IN_CHECK;
+            case null, default -> PRINT_INFO;
+        };
+    }
+
+    private String decideGameEventMessage(ServerMessage.NotificationType type,String whiteUser, String blackUser){
+        return String.format(switch (type){
+            case WHITE_IN_CHECK -> "%2$s put %1$s in check";
+            case BLACK_IN_CHECK -> "%1$s put %2$s in check";
+            case WHITE_RESIGN -> "%1$s playing white resigned";
+            case BLACK_RESIGN -> "%2$s playing black resigned";
+            case BLACK_WIN_BY_CHECKMATE -> "%2$s checkmated %1$s";
+            case WHITE_WIN_BY_CHECKMATE -> "%1$s checkmated %2$s";
+            case DRAW_GAME -> "The game ended in a draw";
+            default -> "Unknown game event occurred";
+        },whiteUser,blackUser);
+    }
     private String decideMoveMessage(UserGameCommand command, String username){
         ChessMove move = command.getMove();
         return username+" made the move " + humanReadableChessMove(move);

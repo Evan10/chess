@@ -32,10 +32,10 @@ public class ServerMessage {
         USER_LEAVE,
         WHITE_IN_CHECK,
         BLACK_IN_CHECK,
-        OPPONENT_RESIGN,
-        YOU_RESIGN,
-        BLACK_WIN,
-        WHITE_WIN,
+        WHITE_RESIGN,
+        BLACK_RESIGN,
+        BLACK_WIN_BY_CHECKMATE,
+        WHITE_WIN_BY_CHECKMATE,
         DRAW_GAME,
         PRINT_INFO
     }
