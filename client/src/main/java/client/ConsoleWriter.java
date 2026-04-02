@@ -27,6 +27,14 @@ public class ConsoleWriter {
         flushToConsole();
     }
 
+    public void writeServerMessage(String message){
+        messageQueue.append(EscapeSequences.ERASE_LINE);
+        writeMessage(message);
+    }
+    public void writeServerErrorMessage(String error){
+        messageQueue.append(EscapeSequences.ERASE_LINE);
+        writeErrorMessage(error);
+    }
 
     public void writeErrorMessage(String error){
         messageQueue.append(EscapeSequences.SET_TEXT_COLOR_RED);
@@ -42,10 +50,10 @@ public class ConsoleWriter {
     }
 
     public void writeBoard(ChessGame game){
-        messageQueue.append(uiChessBoard(game,sessionData.getColor(), null));
-        messageQueue.append("\n");
+        writeBoard(game, null);
     }
     public void writeBoard(ChessGame game, Collection<ChessMove> legalMoves){
+        messageQueue.append("\n");
         messageQueue.append(uiChessBoard(game,sessionData.getColor(), legalMoves));
         messageQueue.append("\n");
     }
@@ -57,6 +65,7 @@ public class ConsoleWriter {
     }
 
     public void flushToConsole(){
+        messageQueue.append(EscapeSequences.ERASE_LINE);
         appendNewCommandLine();
         System.out.printf(messageQueue.toString());
         messageQueue.setLength(0);

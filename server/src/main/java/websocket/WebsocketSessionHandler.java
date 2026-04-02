@@ -4,16 +4,20 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
+import util.MyLogger;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 import static util.Constants.OK;
 
 public class WebsocketSessionHandler {
+
+    private static final Logger LOGGER = MyLogger.getLogger();
 
     private final ConcurrentMap<String, List<Session>> sessions = new ConcurrentHashMap<>();
     private static final Gson SERIALIZER = new Gson();
@@ -44,24 +48,30 @@ public class WebsocketSessionHandler {
 
     public void broadcastGameUpdate(GameData gameData) throws IOException {
         List<Session> watchers = sessions.get(gameData.gameID());
-        ServerMessage messageObj = determineMessageFromGameState(gameData);
+        ServerMessage messageObj = new ServerMessage(gameData);
         String message = SERIALIZER.toJson(messageObj);
         broadcast(null, message,watchers);
     }
 
-    public void broadcastResign(Session s, String gameID, String msg) throws IOException {
-        List<Session> watchers = sessions.get(gameID);
-        ServerMessage messageObj = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,msg);
-        String message = SERIALIZER.toJson(messageObj);
-        broadcast(s,message,watchers);
 
-        ServerMessage messageObjToResigner = new ServerMessage(ServerMessage.NotificationType.OPPONENT_RESIGN,
+    public void broadcastResign(Session s, String gameID, String msg) throws IOException {
+        broadcastNotification(s, ServerMessage.NotificationType.OPPONENT_RESIGN,msg, gameID);
+
+        ServerMessage messageObjToResigner = new ServerMessage(ServerMessage.NotificationType.YOU_RESIGN,
                 "You resigned");
         String msgToResigner = SERIALIZER.toJson(messageObjToResigner);
         s.getRemote().sendString(msgToResigner);
     }
 
+    public void broadcastNotification(Session s, ServerMessage.NotificationType type, String msg, String gameID) throws IOException {
+        List<Session> watchers = sessions.get(gameID);
+        ServerMessage messageObj = new ServerMessage(type,msg);
+        String message = SERIALIZER.toJson(messageObj);
+        broadcast(s,message,watchers);
+    }
+
     private void broadcast(Session ignored, String message, List<Session> watchers) throws IOException {
+        LOGGER.info("Message broadcasted:\n"+message);
         for(Session s: watchers){
             if(s.isOpen() && !s.equals(ignored)) {
                 s.getRemote().sendString(message);
@@ -70,21 +80,15 @@ public class WebsocketSessionHandler {
     }
 
     public static void sendErrorMessage(Session session, ServerMessage message) throws IOException {
-        session.getRemote().sendString(SERIALIZER.toJson(message));
+        String json = SERIALIZER.toJson(message);
+        LOGGER.info(String.format("Error message returned to user:\n%s", json));
+        session.getRemote().sendString(json);
     }
 
-    private ServerMessage determineMessageFromGameState(GameData gameData){
-        ChessGame game = gameData.game();
-        if(game.isInStalemate(ChessGame.TeamColor.WHITE)
-                || gameData.game().isInStalemate(ChessGame.TeamColor.BLACK)){
-            return new ServerMessage(ServerMessage.NotificationType.DRAW_GAME, "Stalemate");
-        }
-        if(game.isInCheckmate(ChessGame.TeamColor.BLACK)){
-            return new ServerMessage(ServerMessage.NotificationType.WHITE_WIN, "Black is in checkmate");
-        }else if(game.isInCheckmate(ChessGame.TeamColor.WHITE)){
-            return new ServerMessage(ServerMessage.NotificationType.BLACK_WIN, "White is in checkmate");
-        }
-        return new ServerMessage(gameData);
+    public static void sendMessage(Session session, ServerMessage message) throws IOException {
+        String json = SERIALIZER.toJson(message);
+        LOGGER.info(String.format("Message to user:\n%s", json));
+        session.getRemote().sendString(json);
     }
 
     public void closeConnections(){

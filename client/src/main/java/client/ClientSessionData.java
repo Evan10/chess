@@ -58,7 +58,7 @@ public class ClientSessionData {
     }
 
     public GameData getGameFromCache(int position){
-        return positionGameDataMap.getOrDefault(position, null);
+        return positionGameDataMap.get(position);
     }
 
     public void addGames(Collection<GameData> games) {
@@ -111,8 +111,12 @@ public class ClientSessionData {
         gameIDPositionMap.clear();
         positionGameDataMap.clear();
         nextPosition = 0;
+        clearGameData();
+    }
+
+    public void clearGameData(){
         currentGameID = null;
-        ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
+        color = ChessGame.TeamColor.WHITE;
         currentGame = null;
     }
 }

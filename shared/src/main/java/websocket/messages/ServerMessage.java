@@ -17,6 +17,7 @@ public class ServerMessage {
     NotificationType notificationType;
     String message;
 
+
     String errorMessage;
 
     public enum ServerMessageType {
@@ -26,6 +27,11 @@ public class ServerMessage {
     }
 
     public enum NotificationType {
+        CHESS_MOVE,
+        USER_CONNECT,
+        USER_LEAVE,
+        WHITE_IN_CHECK,
+        BLACK_IN_CHECK,
         OPPONENT_RESIGN,
         YOU_RESIGN,
         BLACK_WIN,
@@ -72,6 +78,10 @@ public class ServerMessage {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     @Override

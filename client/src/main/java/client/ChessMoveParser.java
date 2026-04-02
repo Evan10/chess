@@ -32,7 +32,7 @@ public class ChessMoveParser {
         int letterIndex = chessLetterToNumber(letter);
         int numberIndex = Integer.parseInt(number);
 
-        return new ChessPosition(numberIndex, letterIndex);
+        return new ChessPosition(letterIndex,numberIndex);
     }
 
     private static ChessPiece.PieceType parsePieceType(String piece) throws InvalidMoveException {

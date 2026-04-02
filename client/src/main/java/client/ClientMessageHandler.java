@@ -24,30 +24,34 @@ public class ClientMessageHandler implements MessageHandler.Whole<String> {
             case NOTIFICATION -> handleNotification(message);
             case ERROR -> handlerError(message);
         }
+        consoleWriter.flushToConsole();
     }
 
 
     private void handleLoadGame(ServerMessage message){
         GameData gameData = message.getGame();
-        if(gameData== null || sessionData.getCurrentGameID().equals(gameData.gameID())){
+        if(gameData== null || !sessionData.getCurrentGameID().equals(gameData.gameID())){
             return;
         }
         sessionData.setCurrentGame(gameData);
         consoleWriter.writeBoard(gameData.game());
-        if(sessionData.getColor().equals(gameData.game().getTeamTurn())){
-            consoleWriter.writeMessage("Your turn");
+        if(message.getMessage()!= null){
+            consoleWriter.writeServerMessage(message.getMessage());
+        }else if(sessionData.getColor().equals(gameData.game().getTeamTurn())){
+            consoleWriter.writeServerMessage("Your turn");
         }else{
-            consoleWriter.writeMessage("Opponents turn");
+            consoleWriter.writeServerMessage("Opponents turn");
         }
+
     }
 
     private void handleNotification(ServerMessage message){
         ServerMessage.NotificationType type  = message.getNotificationType();
         if(type == null){return;}
-        consoleWriter.writeMessage(message.getMessage());
+        consoleWriter.writeServerMessage(message.getMessage());
     }
 
     private void handlerError(ServerMessage message){
-        consoleWriter.writeErrorMessage(message.getMessage());
+        consoleWriter.writeServerErrorMessage(message.getErrorMessage());
     }
 }

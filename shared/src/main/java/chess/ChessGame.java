@@ -22,14 +22,23 @@ public class ChessGame {
         WHITE_WIN_OPP_RESIGN,
         BLACK_WIN_OPP_RESIGN,
         DRAW_STALEMATE,
-        NOT_OVER
+        WHITE_CHECK,
+        BLACK_CHECK,
+        NORMAL;
+        public boolean isGameOver(){
+            return switch (this) {
+                case BLACK_WIN_CHECKMATE, WHITE_WIN_CHECKMATE, BLACK_WIN_OPP_RESIGN, WHITE_WIN_OPP_RESIGN,
+                     DRAW_STALEMATE -> true;
+                default -> false;
+            };
+        }
     }
 
     public ChessGame() {
         cboard = new ChessBoard();
         cboard.resetBoard();
         teamTurn = TeamColor.WHITE;
-        state = GameState.NOT_OVER;
+        state = GameState.NORMAL;
     }
 
     /**
@@ -121,7 +130,14 @@ public class ChessGame {
                     : GameState.WHITE_WIN_CHECKMATE;
         }else if(isInStalemate(teamTurn)){
             state = GameState.DRAW_STALEMATE;
+        } else if(isInCheck(teamTurn)){
+            state =  teamTurn.equals(TeamColor.WHITE)
+                    ? GameState.WHITE_CHECK
+                    : GameState.BLACK_CHECK;
+        }else{
+            state = GameState.NORMAL;
         }
+
     }
     /**
      * Determines if the given team is in check

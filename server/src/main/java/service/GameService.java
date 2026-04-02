@@ -14,12 +14,14 @@ import org.jetbrains.annotations.NotNull;
 import request.*;
 import util.Util;
 import websocket.commands.UserGameCommand;
+import websocket.results.LeaveGameResult;
 import websocket.results.MakeMoveResult;
+import websocket.results.ObserveGameResult;
 import websocket.results.ResignResult;
 
-import java.util.Collection;
-
 import static util.Constants.*;
+import static util.Util.getTeamColor;
+import static util.Util.isPlayer;
 
 public class GameService {
 
@@ -29,10 +31,20 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
+
+    public ObserveGameResult observeGame(UserGameCommand command, AuthData authData) throws DataAccessException {
+        GameData gameData = gameDAO.getGame(command.getGameID().toString());
+        if(authData!= null){
+            return new ObserveGameResult(OK,"", gameData);
+        }else{
+            return new ObserveGameResult(FORBIDDEN,"Error: user does not have authorization", null);
+        }
+    }
+
     public MakeMoveResult makeMove(UserGameCommand command, AuthData authData) throws DataAccessException {
         GameData gameData = gameDAO.getGame(command.getGameID().toString());
         ChessGame game = gameData.game();
-        ChessMove move = command.getChessMove();
+        ChessMove move = command.getMove();
 
         if(!authData.username().equals(
                 game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)
@@ -41,15 +53,15 @@ public class GameService {
             return new MakeMoveResult(FORBIDDEN, "Error: invalid move attempt", gameData);
         }
 
-        if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
+        if(!game.getState().isGameOver()){
             try {
                 game.makeMove(move);
                 gameDAO.updateGame(gameData);
-                if(!game.getState().equals(ChessGame.GameState.NOT_OVER)){
+                if(game.getState().isGameOver()){
                     String winMessage = switch (game.getState()){
-                        case BLACK_WIN_CHECKMATE -> "Black wins by checkmate";
-                        case WHITE_WIN_CHECKMATE -> "White wins by checkmate";
-                        case DRAW_STALEMATE -> "No valid moves; stalemate";
+                        case BLACK_WIN_CHECKMATE -> String.format("Black player %s wins by checkmate",gameData.blackUsername());
+                        case WHITE_WIN_CHECKMATE -> String.format("White player %s wins by checkmate",gameData.whiteUsername());
+                        case DRAW_STALEMATE -> String.format("The %s player has no valid moves; stalemate",game.getTeamTurn().name());
                         default -> "Invalid game state";
                     };
                     return new MakeMoveResult(OK, winMessage,gameData);
@@ -74,15 +86,34 @@ public class GameService {
         }else{
             return new ResignResult(FORBIDDEN,"Error: user is not a player in this game");
         }
-        if(game.getState().equals(ChessGame.GameState.NOT_OVER)){
+        if(!game.getState().isGameOver()){
                 game.setState(team.equals(ChessGame.TeamColor.WHITE)
                         ? ChessGame.GameState.BLACK_WIN_OPP_RESIGN
                         : ChessGame.GameState.WHITE_WIN_OPP_RESIGN);
                 gameDAO.updateGame(gameData);
-                return new ResignResult(OK, team.name()+" player resigned");
+                String msg = String.format("User %s playing as %s resigned",authData.username(),team.name());
+                return new ResignResult(OK, msg);
         }else{
             return new ResignResult(FORBIDDEN,"Error: game is over");
         }
+    }
+
+    public LeaveGameResult leaveGame(UserGameCommand command, AuthData authData) throws DataAccessException {
+        GameData gameData = gameDAO.getGame(command.getGameID().toString());
+        if(!isPlayer(authData.username(),gameData)){
+            return new LeaveGameResult(FORBIDDEN,"Error: user is not a player in the game", gameData);
+        }
+        boolean isWhite = ChessGame.TeamColor.WHITE.equals(getTeamColor(authData.username(),gameData));
+        String whiteUsername = isWhite? null: gameData.whiteUsername();
+        String blackUsername=isWhite? gameData.blackUsername():null;
+        GameData updatedGameData = new GameData(gameData.gameID(),
+                whiteUsername,
+                blackUsername,
+                gameData.gameName(),
+                gameData.game());
+        gameDAO.updateGame(updatedGameData);
+        String message = String.format("The %s player %s left the game",isWhite?"White":"Black",authData.username());
+        return new LeaveGameResult(OK,message,updatedGameData);
     }
 
     public @NotNull ListGamesResult listGames(ListGamesRequest req) {

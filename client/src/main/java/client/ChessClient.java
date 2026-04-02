@@ -8,13 +8,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Scanner;
 
+import static java.lang.System.exit;
+
 public class ChessClient {
     private boolean running;
 
     RequestHandler requestHandler;
     public ClientSessionData sessionData;
     private final ServerFacade httpConnection;
-    private final WsClient wsConnection;
+    private WsClient wsConnection;
     private final ConsoleWriter consoleWriter;
     private final ClientMessageHandler messageHandler;
 
@@ -30,7 +32,9 @@ public class ChessClient {
         try {
             wsConnection = new WsClient(host, port, messageHandler, sessionData);
         } catch (URISyntaxException | IOException | DeploymentException e) {
-            throw new RuntimeException(e);
+            consoleWriter.writeErrorMessage("Error: Unable to connect to websocket server;\n server may not be running");
+            consoleWriter.flushToConsole();
+            return;
         }
 
         requestHandler = new RequestHandler(httpConnection,wsConnection, sessionData, consoleWriter);

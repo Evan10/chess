@@ -28,8 +28,7 @@ public class RequestHandler {
     private static final String GAME_NOT_FOUND_MESSAGE = """
                      Game was not found in local cache; try using the command:
                         list
-                     To list the game
-                     """;
+                     To list the game""";
     private final ServerFacade httpConnection;
     private final WsClient wsConnection;
     private final ClientSessionData sessionData;
@@ -72,7 +71,7 @@ public class RequestHandler {
 
 
     private void handleUnknown(){
-        consoleWriter.writeErrorMessage("Unknown command; Please use a valid command \n");
+        consoleWriter.writeErrorMessage("Unknown command; Please use a valid command ");
         handleHelp();
     }
 
@@ -81,36 +80,31 @@ public class RequestHandler {
         if(sessionData.getState() == LOGGED_OUT){
             consoleWriter.writeMessage("""
                             register <Username> <Password> <Email> - create an account
-                            login <Username> <Password> - to play chess
-                        """);
+                            login <Username> <Password> - to play chess""".indent(4).stripTrailing());
         }else{
             if(canUseGameCommands()){
                 consoleWriter.writeMessage("""
-                            redraw - current game
-                            leave - current game
-                            highlight <position> - highlight valid moves
-                        """);
+                                redraw - current game
+                                leave - current game
+                                highlight <position> - highlight valid moves""".indent(4).stripTrailing());
             } else {
                 consoleWriter.writeMessage("""
                             create <Name> - create a chess game
                             list - all chess games
                             join <GamePosition> [BLACK|WHITE]
                             observe <GamePosition> - a chess game
-                            logout - of chess client
-                        """);
+                            logout - of chess client""".indent(4).stripTrailing());
             }
             if(isPlayerInGame()) {
                 consoleWriter.writeMessage("""
                             resign - from current game
-                            move <position-start> <position-end> <*promotion>
-                        """);
+                            move <position-start> <position-end> <*promotion>""".indent(4).stripTrailing());
             }
         }
 
         consoleWriter.writeMessage("""
                     quit - chess client
-                    help - commands
-                """);
+                    help - commands""".indent(4).stripTrailing());
     }
 
     private void handleQuit(){
@@ -263,14 +257,17 @@ public class RequestHandler {
         }
         try {
             String gameID = sessionData.getGameIDFromPosition(gamePos);
-
             wsConnection.connectToGame(Integer.parseInt(gameID));
-
             sessionData.setCurrentGameID(gameID);
             GameData gameData = sessionData.getGameFromCache(gamePos);
+            sessionData.setCurrentGame(gameData);
             if (gameData == null) {
                 consoleWriter.writeErrorMessage("Game not observed");
                 return;
+            }
+            if(isPlayerInGame()){
+                String username = sessionData.getAuthData().username();
+                sessionData.setColor(username.equals(gameData.whiteUsername())? ChessGame.TeamColor.WHITE: ChessGame.TeamColor.BLACK);
             }
             consoleWriter.writeMessage("Observing game: " + gameData.gameName());
             consoleWriter.writeBoard(gameData.game());
@@ -298,6 +295,7 @@ public class RequestHandler {
     private void handleRedrawGame(){
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
         }
         consoleWriter.writeBoard(sessionData.getCurrentGame().game());
     }
@@ -309,7 +307,7 @@ public class RequestHandler {
         }
         try {
             wsConnection.leaveGame();
-            consoleWriter.writeMessage("Left game");
+            sessionData.clearGameData();
         } catch (IOException e) {
             consoleWriter.writeErrorMessage("Error: unable to leave game");
         }
@@ -353,9 +351,6 @@ public class RequestHandler {
         try {
             ChessMove move = ChessMoveParser.parseChessMove(start,end,promotion);
             wsConnection.makeMoveInGame(move);
-            // stops client from double sending moves before hearing back from the server
-            sessionData.getCurrentGame().game().toggleTeamTurn();
-            consoleWriter.writeMessage("Move made");
         } catch (InvalidMoveException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
         } catch (IOException e) {
@@ -373,7 +368,6 @@ public class RequestHandler {
         }
         try {
             wsConnection.resignFromGame();
-            consoleWriter.writeMessage("Successfully resigned");
         } catch (IOException e) {
             consoleWriter.writeErrorMessage(e.getMessage());
         }
@@ -419,10 +413,8 @@ public class RequestHandler {
         if(username == null) {return false;}
         boolean isWhite = sessionData.getColor().equals(ChessGame.TeamColor.WHITE);
         if(sessionData.getCurrentGame() == null){return false;}
-        String correspondingUsername = isWhite ?
-                sessionData.getCurrentGame().whiteUsername():
-                sessionData.getCurrentGame().blackUsername();
-        return  correspondingUsername!=null && correspondingUsername.equals(username);
+        return  username.equals(sessionData.getCurrentGame().whiteUsername()) ||
+                username.equals(sessionData.getCurrentGame().blackUsername());
     }
 
     private boolean canMakeMove(){
