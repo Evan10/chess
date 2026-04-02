@@ -1,14 +1,10 @@
 package client;
 
 import jakarta.websocket.DeploymentException;
-import ui.EscapeSequences;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Scanner;
-
-import static java.lang.System.exit;
 
 public class ChessClient {
     private boolean running;
@@ -18,7 +14,6 @@ public class ChessClient {
     private final ServerFacade httpConnection;
     private WsClient wsConnection;
     private final ConsoleWriter consoleWriter;
-    private final ClientMessageHandler messageHandler;
 
     public ChessClient(String host){
         int port = 8080;
@@ -28,7 +23,7 @@ public class ChessClient {
         consoleWriter = new ConsoleWriter(sessionData);
         httpConnection = new ServerFacade(host, port, sessionData);
 
-        messageHandler = new ClientMessageHandler(sessionData,consoleWriter);
+        ClientMessageHandler messageHandler = new ClientMessageHandler(sessionData, consoleWriter);
         try {
             wsConnection = new WsClient(host, port, messageHandler, sessionData);
         } catch (URISyntaxException | IOException | DeploymentException e) {

@@ -6,7 +6,6 @@ import jakarta.websocket.*;
 import model.AuthData;
 import websocket.commands.UserGameCommand;
 
-import javax.naming.NoPermissionException;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;

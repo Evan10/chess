@@ -45,12 +45,12 @@ public class ServerMessage {
     }
 
     public ServerMessage(GameData gameData) {
-        this.serverMessageType = ServerMessageType.LOAD_GAME;
+        this(ServerMessageType.LOAD_GAME);
         this.game =gameData;
     }
 
     public ServerMessage(ServerMessageType type, String message) {
-        this.serverMessageType = type;
+        this(type);
         if(type.equals(ServerMessageType.ERROR)){
             this.errorMessage = message;
         }else {
@@ -59,7 +59,7 @@ public class ServerMessage {
     }
 
     public ServerMessage(NotificationType type, String message) {
-        this.serverMessageType = ServerMessageType.NOTIFICATION;
+        this(ServerMessageType.NOTIFICATION);
         this.notificationType = type;
         this.message=message;
     }

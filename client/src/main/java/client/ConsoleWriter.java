@@ -3,7 +3,6 @@ package client;
 import chess.ChessGame;
 import chess.ChessMove;
 import model.GameData;
-import org.glassfish.grizzly.http.server.SuspendContext;
 import ui.EscapeSequences;
 
 import java.util.Collection;
@@ -15,8 +14,8 @@ import static ui.UIChessBoardHelper.uiChessBoard;
 public class ConsoleWriter {
 
     private String prefix = ClientState.LOGGED_OUT.name + ">>";
-    private ClientSessionData sessionData;
-    private StringBuilder messageQueue;
+    private final ClientSessionData sessionData;
+    private final StringBuilder messageQueue;
     ConsoleWriter(ClientSessionData sessionData){
         messageQueue = new StringBuilder();
         this.sessionData=sessionData;

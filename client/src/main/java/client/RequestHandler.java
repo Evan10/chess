@@ -6,13 +6,9 @@ import chess.ChessPosition;
 import chess.InvalidMoveException;
 import model.AuthData;
 import model.GameData;
-import ui.UIChessBoardHelper;
-import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static client.ChessMoveParser.parseChessPosition;
 import static client.ClientCommands.*;
@@ -64,7 +60,7 @@ public class RequestHandler {
             case RESIGN_FROM_GAME -> handleResignFromGame();
             case HIGHLIGHT_MOVES -> handleHighlightMoves(parts);
             default -> handleUnknown();
-        };
+        }
         return quit;
     }
 
@@ -411,7 +407,6 @@ public class RequestHandler {
         if(authData == null) {return false;}
         String username = authData.username();
         if(username == null) {return false;}
-        boolean isWhite = sessionData.getColor().equals(ChessGame.TeamColor.WHITE);
         if(sessionData.getCurrentGame() == null){return false;}
         return  username.equals(sessionData.getCurrentGame().whiteUsername()) ||
                 username.equals(sessionData.getCurrentGame().blackUsername());

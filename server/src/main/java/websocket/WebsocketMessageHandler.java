@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 import static util.Constants.OK;
 import static util.Util.humanReadableChessMove;
-import static util.Util.isPlayer;
 import static websocket.messages.ServerMessage.NotificationType.*;
 
 public class WebsocketMessageHandler implements WsMessageHandler {
