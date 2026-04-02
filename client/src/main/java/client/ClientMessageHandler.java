@@ -37,10 +37,8 @@ public class ClientMessageHandler implements MessageHandler.Whole<String> {
         consoleWriter.writeBoard(gameData.game());
         if(message.getMessage()!= null){
             consoleWriter.writeServerMessage(message.getMessage());
-        }else if(sessionData.getColor().equals(gameData.game().getTeamTurn())){
-            consoleWriter.writeServerMessage("Your turn");
-        }else{
-            consoleWriter.writeServerMessage("Opponents turn");
+        }else {
+            consoleWriter.writeServerMessage(message.getGame().game().getTeamTurn().name()+"'s turn");
         }
 
     }

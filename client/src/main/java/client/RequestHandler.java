@@ -206,7 +206,14 @@ public class RequestHandler {
                         join <GamePosition> [BLACK|WHITE]""");
             return;
         }
-        int gamePos = Integer.parseInt(args[1]);
+        int gamePos;
+        try {
+            gamePos = Integer.parseInt(args[1]);
+        }catch (NumberFormatException e){
+            consoleWriter.writeMessage("""
+                    <GamePosition> must be a integer""");
+            return;
+        }
         ChessGame.TeamColor team;
         try{
             team = stringToTeamColor(args[2]);
@@ -246,7 +253,14 @@ public class RequestHandler {
                         observe <GamePosition>""");
             return;
         }
-        int gamePos = Integer.parseInt(args[1]);
+        int gamePos;
+        try {
+            gamePos = Integer.parseInt(args[1]);
+        }catch (NumberFormatException e){
+            consoleWriter.writeMessage("""
+                    <GamePosition> must be a integer""");
+            return;
+        }
         if (!sessionData.isValidGame(gamePos)) {
             consoleWriter.writeErrorMessage(GAME_NOT_FOUND_MESSAGE);
             return;

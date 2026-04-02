@@ -20,7 +20,6 @@ public class WsClient extends Endpoint {
         this.sessionData=sessionData;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         URI endpoint = new URI(String.format("ws://%s:%d/ws",host, port));
-        System.out.println(endpoint);
         session = container.connectToServer(this, endpoint);
         session.addMessageHandler(messageHandler);
     }

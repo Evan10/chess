@@ -61,6 +61,7 @@ public class WebsocketSessionHandler {
     }
 
     private void broadcast(Session ignored, String message, List<Session> watchers) throws IOException {
+        if(watchers == null){return;}
         LOGGER.info("Message broadcasted:\n"+message);
         for(Session s: watchers){
             if(s.isOpen() && !s.equals(ignored)) {
