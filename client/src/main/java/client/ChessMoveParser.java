@@ -30,9 +30,13 @@ public class ChessMoveParser {
         String number = lowercasePosition.substring(1,2);
 
         int letterIndex = chessLetterToNumber(letter);
-        int numberIndex = Integer.parseInt(number);
-
-        return new ChessPosition(letterIndex,numberIndex);
+        int numberIndex;
+        try{
+            numberIndex = Integer.parseInt(number);
+        } catch (NumberFormatException e) {
+            throw new InvalidMoveException("Invalid position given; letter goes first then number");
+        }
+        return new ChessPosition(numberIndex,letterIndex);
     }
 
     private static ChessPiece.PieceType parsePieceType(String piece) throws InvalidMoveException {

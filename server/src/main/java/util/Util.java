@@ -80,10 +80,10 @@ public class Util {
     public static String humanReadableChessMove(ChessMove move){
         ChessPosition start = move.getStartPosition(),end = move.getEndPosition();
         return String.format("%s%s %s%s %s",
-                numberToLetter(start.getRow()),
-                start.getColumn(),
-                numberToLetter(end.getRow()),
-                end.getColumn(),
+                numberToLetter(start.getColumn()),
+                start.getRow(),
+                numberToLetter(end.getColumn()),
+                end.getRow(),
                 chessPieceToString(move.getPromotionPiece())
         );
     }

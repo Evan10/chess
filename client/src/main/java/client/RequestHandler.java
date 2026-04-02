@@ -29,17 +29,23 @@ public class RequestHandler {
     private final WsClient wsConnection;
     private final ClientSessionData sessionData;
     private final ConsoleWriter consoleWriter;
+    private boolean promptResign;
 
     RequestHandler(ServerFacade httpConnection,WsClient wsConnection, ClientSessionData sessionData, ConsoleWriter consoleWriter){
         this.httpConnection=httpConnection;
         this.wsConnection=wsConnection;
         this.sessionData=sessionData;
         this.consoleWriter=consoleWriter;
+        promptResign= false;
     }
 
     public boolean handle(String message){
         String[] parts = message.split(" ");
         String command = parts[0].toLowerCase();
+        if(promptResign){
+            handleResignConfirm(parts);
+            return false;
+        }
         boolean quit = false;
         switch (command){
             case HELP -> handleHelp();
@@ -57,7 +63,7 @@ public class RequestHandler {
             case REDRAW_GAME -> handleRedrawGame();
             case LEAVE_GAME -> handleLeaveGame();
             case MAKE_MOVE -> handleMakeMoveInGame(parts);
-            case RESIGN_FROM_GAME -> handleResignFromGame();
+            case RESIGN_FROM_GAME -> ensurePlayerResignIntent();
             case HIGHLIGHT_MOVES -> handleHighlightMoves(parts);
             default -> handleUnknown();
         }
@@ -368,7 +374,40 @@ public class RequestHandler {
         }
     }
 
+    private void ensurePlayerResignIntent(){
+        if(!canUseGameCommands()){
+            consoleWriter.writeErrorMessage("Error: Not in game");
+            return;
+        } else if(!isPlayerInGame()){
+            consoleWriter.writeErrorMessage("Error: not a player");
+            return;
+        }
+        consoleWriter.writeMessage("""
+                Are you sure that you would like resign? [YES|NO]
+                """);
+        promptResign = true;
+    }
+
+    private void handleResignConfirm(String[] args){
+        if(args.length!=1){
+            consoleWriter.writeErrorMessage("""
+                    Response must be "yes" or "no"
+                    """);
+            return;
+        }
+        String answer = args[0].toLowerCase();
+        switch (answer){
+            case "yes", "y" -> handleResignFromGame();
+            case "no", "n" -> {
+                consoleWriter.writeMessage("Good luck!");
+                promptResign = false;
+            }
+            default -> consoleWriter.writeMessage("Response must be \"yes\" or \"no\"!");
+        }
+    }
+
     private void handleResignFromGame(){
+        promptResign = false;
         if(!canUseGameCommands()){
             consoleWriter.writeErrorMessage("Error: Not in game");
             return;

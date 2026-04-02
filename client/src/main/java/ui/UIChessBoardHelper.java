@@ -3,8 +3,6 @@ package ui;
 import chess.*;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class UIChessBoardHelper {
 
@@ -20,7 +18,7 @@ public class UIChessBoardHelper {
         ChessBoard board = chessGame.getBoard();
         boolean orientation = color.equals(ChessGame.TeamColor.WHITE);
         boolean tileBlack = false;
-        uiBoard.append(drawNumbers(orientation));
+        uiBoard.append(drawLetters(orientation));
         int xVal, yVal;
 
         ChessPosition start = legalMoves != null && legalMoves.iterator().hasNext()
@@ -28,7 +26,7 @@ public class UIChessBoardHelper {
                 : null;
         for(int y = 1; y<=8 ; y++){
             yVal = orientation? 9-y:y;
-            uiBoard.append(drawLetter(yVal));
+            uiBoard.append(drawNumber(yVal));
             for(int x = 1; x<=8 ; x++){
                 xVal = orientation?x:9-x;
                 ChessPosition position = new ChessPosition(yVal,xVal);
@@ -41,12 +39,12 @@ public class UIChessBoardHelper {
                 tileBlack = !tileBlack;
                 uiBoard.append(piece);
             }
-            uiBoard.append(drawLetter(yVal));
+            uiBoard.append(drawNumber(yVal));
             uiBoard.append("\n");
             tileBlack = !tileBlack;
             uiBoard.append(resetAll());
         }
-        uiBoard.append(drawNumbers(orientation));
+        uiBoard.append(drawLetters(orientation));
         return uiBoard.toString();
     }
 
@@ -75,39 +73,25 @@ public class UIChessBoardHelper {
                 + EscapeSequences.RESET_TEXT_BLINKING;
     }
 
-    public static String drawLetter(int n){
+    public static String drawNumber(int n){
         return resetAll()
                 +(EscapeSequences.SET_BG_COLOR_BLACK)
                 + EscapeSequences.SET_TEXT_BOLD
                 + EscapeSequences.SET_TEXT_COLOR_WHITE
-                + String.format(" %-2s",numberToChessLetter(n));
+                + String.format(" %-2s",n);
     }
-    public static String drawNumbers(boolean orientation){
+    public static String drawLetters(boolean orientation){
         return resetAll()
                 +(EscapeSequences.SET_BG_COLOR_BLACK)
                 + EscapeSequences.SET_TEXT_COLOR_WHITE
                 + EscapeSequences.SET_TEXT_BOLD
                 + EscapeSequences.EMPTY
-                + (orientation ? " 1  2   3   4  5   6  7   8":" 8  7   6   5  4   3  2   1")
+                + (orientation ? " a  b   c   d  e   f  g   h":" h  g   f   e  d   c  b   a")
                 + EscapeSequences.EMPTY
                 +"\n"
                 + resetAll();
     }
 
-
-    public static String numberToChessLetter(int n){
-        return switch (n){
-            case 1 ->"a";
-            case 2 ->"b";
-            case 3 ->"c";
-            case 4 ->"d";
-            case 5 ->"e";
-            case 6 ->"f";
-            case 7 ->"g";
-            case 8 ->"h";
-            default -> EscapeSequences.EMPTY;
-        };
-    }
 
 
     public static String setBGColor(boolean start,boolean legalMove, boolean isBlack){
